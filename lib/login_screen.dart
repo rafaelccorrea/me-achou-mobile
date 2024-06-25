@@ -115,7 +115,9 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
               TextButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  // API de logar com Google
+                },
                 icon: ShaderMask(
                   shaderCallback: (Rect bounds) {
                     return const LinearGradient(
