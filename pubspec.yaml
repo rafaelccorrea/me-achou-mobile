@@ -1,11 +1,11 @@
 name: meachou
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.4.3 <4.0.0'
+  sdk: ">=3.4.3 <4.0.0"
 
 dependencies:
   flutter:
@@ -13,6 +13,8 @@ dependencies:
   google_fonts: ^6.2.1
   font_awesome_flutter: ^10.1.0
   cupertino_icons: ^1.0.6
+  flutter_dotenv: ^5.1.0
+  flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
   flutter_test:
@@ -21,3 +23,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/default_avatar.png

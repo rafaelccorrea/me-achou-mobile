@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'signup_screen.dart';
-import 'forgot_password_screen.dart';
+import 'package:meachou/screens/forgot_password_screen.dart';
+import 'package:meachou/screens/home_screen.dart';
+import 'package:meachou/screens/signup_screen.dart';
+import 'package:meachou/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -14,6 +16,44 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final AuthService _authService = AuthService(); // Instância do AuthService
+
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+
+      final success = await _authService.login(email, password);
+
+      if (success) {
+        // Navegar para a tela home após o login bem-sucedido
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      } else {
+        // Tratar falha de login
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Erro de Login'),
+              content:
+                  Text('Falha ao fazer login. Verifique suas credenciais.'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,11 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // Processar os dados
-                  }
-                },
+                onPressed: _login,
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.blueAccent,
                   backgroundColor: Colors.white,
@@ -115,21 +151,15 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
               TextButton.icon(
-                onPressed: () {
-                  // API de logar com Google
-                },
+                onPressed: _authService.loginWithGoogle,
                 icon: ShaderMask(
                   shaderCallback: (Rect bounds) {
                     return const LinearGradient(
                       colors: [
-                        Color.fromRGBO(
-                            66, 133, 244, 1), // Azul - RGB(66, 133, 244)
-                        Color.fromRGBO(
-                            234, 67, 53, 1), // Vermelho - RGB(234, 67, 53)
-                        Color.fromRGBO(
-                            251, 188, 5, 1), // Amarelo - RGB(251, 188, 5)
-                        Color.fromRGBO(
-                            52, 168, 83, 1), // Verde - RGB(52, 168, 83)
+                        Color.fromRGBO(66, 133, 244, 1),
+                        Color.fromRGBO(234, 67, 53, 1),
+                        Color.fromRGBO(251, 188, 5, 1),
+                        Color.fromRGBO(52, 168, 83, 1),
                       ],
                       stops: [0.0, 0.25, 0.5, 0.75],
                       begin: Alignment.topLeft,

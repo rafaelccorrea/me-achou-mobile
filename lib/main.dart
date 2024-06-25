@@ -1,26 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'login_screen.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:meachou/screens/home_screen.dart';
 
-void main() {
-  runApp(MeAchouApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MyApp());
 }
 
-class MeAchouApp extends StatelessWidget {
-  const MeAchouApp({super.key});
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Me-Achou',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.poppinsTextTheme(
-          Theme.of(context).textTheme,
-        ),
-      ),
-      home: LoginScreen(),
-      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
     );
   }
 }
