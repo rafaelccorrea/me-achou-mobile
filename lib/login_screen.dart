@@ -116,15 +116,37 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
               TextButton.icon(
                 onPressed: () {},
-                icon:
-                    const FaIcon(FontAwesomeIcons.google, color: Colors.white),
+                icon: ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return const LinearGradient(
+                      colors: [
+                        Color.fromRGBO(
+                            66, 133, 244, 1), // Azul - RGB(66, 133, 244)
+                        Color.fromRGBO(
+                            234, 67, 53, 1), // Vermelho - RGB(234, 67, 53)
+                        Color.fromRGBO(
+                            251, 188, 5, 1), // Amarelo - RGB(251, 188, 5)
+                        Color.fromRGBO(
+                            52, 168, 83, 1), // Verde - RGB(52, 168, 83)
+                      ],
+                      stops: [0.0, 0.25, 0.5, 0.75],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      tileMode: TileMode.clamp,
+                    ).createShader(bounds);
+                  },
+                  child: const FaIcon(
+                    FontAwesomeIcons.google,
+                    size: 30,
+                    color: Colors.white,
+                  ),
+                ),
                 label: const Text(
                   'Login com Google',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.blueAccent),
                 ),
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.transparent,
+                  backgroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
