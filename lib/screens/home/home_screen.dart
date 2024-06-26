@@ -43,9 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
             appBar: AppBar(
-              title: Text('Carregando...'),
+              title: const Text('Carregando...'),
             ),
-            body: Center(
+            body: const Center(
               child: CircularProgressIndicator(),
             ),
           );
@@ -60,15 +60,15 @@ class _HomeScreenState extends State<HomeScreen> {
           WidgetsBinding.instance?.addPostFrameCallback((_) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => LoginScreen()),
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
             );
           });
 
           return Scaffold(
             appBar: AppBar(
-              title: Text('Erro'),
+              title: const Text('Erro'),
             ),
-            body: Center(
+            body: const Center(
               child: CircularProgressIndicator(),
             ),
           );
