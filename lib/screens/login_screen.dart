@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:meachou/screens/forgot_password_screen.dart';
-import 'package:meachou/screens/home_screen.dart';
+import 'package:meachou/screens/home/home_screen.dart';
 import 'package:meachou/screens/signup_screen.dart';
 import 'package:meachou/services/auth_service.dart';
 
