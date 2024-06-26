@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:meachou/screens/login_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:meachou/providers/app_drawer_provider.dart';
+import 'package:meachou/services/auth_service.dart';
 
 class CustomDrawer extends StatelessWidget {
   final bool isOpen;
@@ -13,6 +14,8 @@ class CustomDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AuthService authService = Provider.of<AuthService>(context, listen: false);
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -40,8 +43,11 @@ class CustomDrawer extends StatelessWidget {
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
             onTap: () async {
-              // Lógica de logout aqui, usando o provider se necessário
-              Navigator.pop(context);
+              await authService.logout();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
             },
           ),
         ],

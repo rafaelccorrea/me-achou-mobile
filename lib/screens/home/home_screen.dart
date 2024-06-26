@@ -7,6 +7,7 @@ import 'package:meachou/components/custom_bottom_navigation_bar.dart';
 import 'package:meachou/components/home_content.dart';
 import 'package:meachou/widgets/custom_drawer.dart';
 import 'package:meachou/services/auth_service.dart'; // Importe o serviço de autenticação
+import 'package:meachou/screens/login_screen.dart'; // Importe a tela de login
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -50,13 +51,25 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
+        // Se ocorrer qualquer erro ou se os dados do usuário não estiverem disponíveis,
+        // deslogue o usuário e navegue para a tela de login.
         if (snapshot.hasError || snapshot.data == null) {
+          authService.logout(); // Desloga o usuário
+
+          // Navega para a tela de login
+          WidgetsBinding.instance?.addPostFrameCallback((_) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
+          });
+
           return Scaffold(
             appBar: AppBar(
               title: Text('Erro'),
             ),
             body: Center(
-              child: Text('Ocorreu um erro ao carregar os dados do usuário.'),
+              child: CircularProgressIndicator(),
             ),
           );
         }
