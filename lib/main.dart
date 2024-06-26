@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:meachou/screens/forgot_password_screen.dart';
 import 'package:meachou/screens/home/home_screen.dart';
+import 'package:meachou/screens/login_screen.dart';
+import 'package:meachou/screens/signup_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/providers/app_drawer_provider.dart';
 import 'package:meachou/services/auth_service.dart'; // Importe o serviço AuthService
@@ -28,6 +31,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       home: HomeScreen(),
       debugShowCheckedModeBanner: false,
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/forgot_password': (context) => const ForgotPasswordScreen(),
+        '/signup': (context) => const SignUpScreen()
+      },
     );
   }
 }

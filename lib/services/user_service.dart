@@ -21,5 +21,32 @@ class UserService {
     );
   }
 
+  Future<http.Response> forgotPasswordEndpoint(String email) async {
+    return await http.post(
+      Uri.parse(ApiConstants.forgotPasswordEndpoint),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+      }),
+    );
+  }
+
+  Future<http.Response> resetPasswordEndpoint(
+      String email, String token, String newPassword) async {
+    return await http.post(
+      Uri.parse(ApiConstants.resetPasswordEndpoint),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'token': token,
+        'newPassword': newPassword,
+      }),
+    );
+  }
+
   // Métodos adicionais conforme necessário para operações de usuário
 }
