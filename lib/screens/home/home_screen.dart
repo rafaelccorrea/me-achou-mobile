@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _pages = [
     HomeContent(),
     PlaceholderWidget('Publicações'),
-    PlaceholderWidget('Favoritos'),
+    PlaceholderWidget('Seguindo'),
     PlaceholderWidget('Avaliações'),
     PlaceholderWidget('Perfil'),
   ];
@@ -34,11 +34,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final appDrawerProvider = Provider.of<AppDrawerProvider>(context);
-    final AuthService authService = Provider.of<AuthService>(
-        context); // Use o Provider para obter o serviço AuthService
+    final AuthService authService = Provider.of<AuthService>(context);
 
     return FutureBuilder<Map<String, dynamic>?>(
-      future: authService.getUser(), // Chame o método para obter o usuário
+      future: authService.getUser(),
       builder: (context, AsyncSnapshot<Map<String, dynamic>?> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
@@ -51,12 +50,9 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        // Se ocorrer qualquer erro ou se os dados do usuário não estiverem disponíveis,
-        // deslogue o usuário e navegue para a tela de login.
         if (snapshot.hasError || snapshot.data == null) {
-          authService.logout(); // Desloga o usuário
+          authService.logout();
 
-          // Navega para a tela de login
           WidgetsBinding.instance?.addPostFrameCallback((_) {
             Navigator.pushReplacement(
               context,
@@ -80,8 +76,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
         return Scaffold(
           appBar: CustomAppBar(
-            name, // Passa o nome do usuário
-            avatar, // Passa a URL do avatar do usuário
+            name,
+            avatar,
           ),
           drawer: CustomDrawer(
             isOpen: appDrawerProvider.isOpen,

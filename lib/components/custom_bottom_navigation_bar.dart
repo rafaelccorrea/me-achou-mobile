@@ -23,7 +23,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.favorite),
-          label: 'Favoritos',
+          label: 'Seguindo',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.rate_review),

@@ -15,4 +15,7 @@ class ApiConstants {
   static String get createUserEndpoint => '$baseUrl/users/register';
   static String get forgotPasswordEndpoint => '$baseUrl/auth/forgot-password';
   static String get resetPasswordEndpoint => '$baseUrl/auth/reset-password';
+  static String get getStoresEndpoint => '$baseUrl/stores';
+  static String get followStoreEndpoint => '$baseUrl/follow-store/:storeId';
+  static String get unfollowStoreEndpoint => '$baseUrl/follow-store/:storeId';
 }
