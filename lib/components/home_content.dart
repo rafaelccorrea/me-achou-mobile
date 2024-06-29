@@ -102,7 +102,6 @@ class _HomeContentState extends State<HomeContent> {
       setState(() {
         isLoadingEvents = false;
       });
-      _showErrorToast('Erro ao carregar os eventos.');
     }
   }
 
@@ -209,11 +208,15 @@ class _HomeContentState extends State<HomeContent> {
           const SizedBox(height: 20),
           _buildSearchInput(),
           const SizedBox(height: 20),
-          isLoadingEvents
-              ? _buildEventCarouselSkeleton()
-              : _buildEventCarousel(),
-          const SizedBox(height: 20),
-          isLoadingStores ? _buildLoadingSkeletons() : _buildStoreList(),
+          if (isLoadingEvents)
+            _buildEventCarouselSkeleton()
+          else if (events.isEmpty)
+            isLoadingStores ? _buildLoadingSkeletons() : _buildStoreList()
+          else ...[
+            _buildEventCarousel(),
+            const SizedBox(height: 20),
+            isLoadingStores ? _buildLoadingSkeletons() : _buildStoreList(),
+          ],
         ],
       ),
     );
@@ -265,9 +268,9 @@ class _HomeContentState extends State<HomeContent> {
               alignment: Alignment.bottomCenter,
               child: Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.black54,
-                  borderRadius: const BorderRadius.only(
+                  borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(15),
                     bottomRight: Radius.circular(15),
                   ),
@@ -385,13 +388,13 @@ class _HomeContentState extends State<HomeContent> {
         ),
         title: Text(
           store['company_name'],
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(store['address']['region'] ?? 'Região não especificada',
-                style: TextStyle(fontSize: 14)),
+                style: const TextStyle(fontSize: 14)),
             _buildStarRating(store['ranking']),
             const SizedBox(height: 4),
             Text(
