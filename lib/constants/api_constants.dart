@@ -18,4 +18,7 @@ class ApiConstants {
   static String get getStoresEndpoint => '$baseUrl/stores';
   static String get followStoreEndpoint => '$baseUrl/follow-store/:storeId';
   static String get unfollowStoreEndpoint => '$baseUrl/follow-store/:storeId';
+  static String get storeDetailsEndpoint => '$baseUrl/stores/details';
+  static String get eventsEndpoint =>
+      '$baseUrl/events?page={page}&limit={limit}';
 }

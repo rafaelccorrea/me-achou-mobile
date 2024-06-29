@@ -6,8 +6,8 @@ import 'package:meachou/components/custom_app_bar.dart';
 import 'package:meachou/components/custom_bottom_navigation_bar.dart';
 import 'package:meachou/components/home_content.dart';
 import 'package:meachou/widgets/custom_drawer.dart';
-import 'package:meachou/services/auth_service.dart'; // Importe o serviço de autenticação
-import 'package:meachou/screens/login_screen.dart'; // Importe a tela de login
+import 'package:meachou/services/auth_service.dart';
+import 'package:meachou/screens/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -75,13 +75,12 @@ class _HomeScreenState extends State<HomeScreen> {
         final name = user['name'];
 
         return Scaffold(
-          appBar: CustomAppBar(
-            name,
-            avatar,
-          ),
-          drawer: CustomDrawer(
+          appBar: const CustomAppBar(),
+          endDrawer: CustomDrawer(
             isOpen: appDrawerProvider.isOpen,
             toggleDrawer: () => appDrawerProvider.toggleDrawer(),
+            userName: name,
+            userAvatarUrl: avatar,
           ),
           body: IndexedStack(
             index: _selectedIndex,
