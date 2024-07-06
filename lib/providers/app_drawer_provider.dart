@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-class AppDrawerProvider with ChangeNotifier {
-  bool _isOpen = false;
+class DrawerProvider with ChangeNotifier {
+  GlobalKey<ScaffoldState>? _scaffoldKey;
 
-  bool get isOpen => _isOpen;
+  set scaffoldKey(GlobalKey<ScaffoldState> key) {
+    _scaffoldKey = key;
+  }
 
-  void toggleDrawer() {
-    _isOpen = !_isOpen;
-    notifyListeners();
+  void openDrawer() {
+    _scaffoldKey?.currentState?.openDrawer();
   }
 }

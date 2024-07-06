@@ -30,8 +30,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
           label: 'Avaliações',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.account_circle),
-          label: 'Perfil',
+          icon: Icon(Icons.menu),
+          label: 'Menu',
         ),
       ],
       currentIndex: selectedIndex,

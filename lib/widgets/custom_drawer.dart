@@ -22,7 +22,7 @@ class CustomDrawer extends StatelessWidget {
 
     return Drawer(
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.blueAccent, Colors.lightBlueAccent],
             begin: Alignment.topLeft,
@@ -44,9 +44,7 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
             Container(
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-              ),
+              decoration: const BoxDecoration(),
               padding: EdgeInsets.zero,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
