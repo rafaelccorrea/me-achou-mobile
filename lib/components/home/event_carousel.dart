@@ -1,83 +1,157 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:photo_view/photo_view.dart';
 
 class EventCarousel extends StatelessWidget {
   final List<dynamic> events;
 
   EventCarousel({required this.events});
 
-  @override
-  Widget build(BuildContext context) {
-    return CarouselSlider.builder(
-      itemCount: events.length,
-      itemBuilder: (context, index, realIdx) {
-        final event = events[index];
-        final startDate = DateFormat('dd-MM-yyyy').parse(event['start_date']);
-        final endDate = DateFormat('dd-MM-yyyy').parse(event['end_date']);
-        final dateRange =
-            '${DateFormat('dd MMM').format(startDate)} - ${DateFormat('dd MMM').format(endDate)}';
+  void showEventDetails(BuildContext context, dynamic event) {
+    initializeDateFormatting('pt_BR', null).then((_) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          final startDate =
+              DateFormat('dd-MM-yyyy', 'pt_BR').parse(event['start_date']);
+          final endDate =
+              DateFormat('dd-MM-yyyy', 'pt_BR').parse(event['end_date']);
+          final dateRange =
+              '${DateFormat('dd MMMM', 'pt_BR').format(startDate)} - ${DateFormat('dd MMMM', 'pt_BR').format(endDate)}';
 
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          elevation: 5,
-          child: Container(
-            width: 180,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              image: DecorationImage(
-                image: NetworkImage(event['image']),
-                fit: BoxFit.cover,
+          return AlertDialog(
+            title: Text(
+              event['title'],
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(15),
-                    bottomRight: Radius.circular(15),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => showDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (context) => GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Dialog(
+                        backgroundColor: Colors.transparent,
+                        insetPadding: const EdgeInsets.all(10),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: PhotoView(
+                            imageProvider: NetworkImage(event['image']),
+                            backgroundDecoration: const BoxDecoration(
+                              color: Colors.transparent,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: Image.network(event['image']),
                   ),
                 ),
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event['title'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    Text(
-                      dateRange,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 16.0),
+                Text(
+                  'Data: $dateRange',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                const Text(
+                  'Descrição do Evento',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  event['description'] ?? 'Sem descrição disponível.',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  'Fechar',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 16,
+                  ),
                 ),
               ),
+            ],
+          );
+        },
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 160,
+      child: CarouselSlider.builder(
+        itemCount: events.length,
+        itemBuilder: (context, index, realIdx) {
+          final event = events[index];
+          final truncatedTitle = event['title'].length > 20
+              ? '${event['title'].substring(0, 20)}...'
+              : event['title'];
+
+          return GestureDetector(
+            onTap: () => showEventDetails(context, event),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundImage: NetworkImage(event['image']),
+                ),
+                const SizedBox(height: 8.0),
+                Flexible(
+                  child: Text(
+                    truncatedTitle,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
             ),
-          ),
-        );
-      },
-      options: CarouselOptions(
-        height: 140,
-        autoPlay: true,
-        enlargeCenterPage: true,
-        aspectRatio: 16 / 9,
-        viewportFraction: 0.8,
-        enableInfiniteScroll: events.length > 2,
+          );
+        },
+        options: CarouselOptions(
+          height: 140,
+          autoPlay: true,
+          enlargeCenterPage: true,
+          aspectRatio: 1.0,
+          viewportFraction: 0.3,
+          enableInfiniteScroll: events.length > 2,
+        ),
       ),
     );
   }
