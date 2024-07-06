@@ -9,8 +9,13 @@ import 'package:meachou/components/home/store_list.dart';
 import 'package:meachou/constants/api_constants.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:meachou/services/stores_service.dart';
+import 'package:meachou/services/event_service.dart';
 
 class HomeContent extends StatefulWidget {
+  final Map<String, dynamic>? filters;
+
+  const HomeContent({Key? key, this.filters}) : super(key: key);
+
   @override
   _HomeContentState createState() => _HomeContentState();
 }
@@ -23,13 +28,14 @@ class _HomeContentState extends State<HomeContent> {
   String? userStoreId;
   final AuthService authService = AuthService();
   final StoreService storeService = StoreService();
+  final EventService eventService = EventService();
   final Map<String, ConfettiController> _confettiControllers = {};
 
   @override
   void initState() {
     super.initState();
     fetchUserStoreId();
-    fetchStores();
+    fetchStores(filters: widget.filters);
     fetchEvents(page: 1, limit: 10);
   }
 
@@ -58,13 +64,26 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
-  Future<void> fetchStores() async {
+  Future<void> fetchStores({Map<String, dynamic>? filters}) async {
+    setState(() {
+      isLoadingStores = true;
+    });
+
+    String? city = filters?['city'];
+
     final token = await authService.getAccessToken();
     final response = await storeService.getStores(
       page: 1,
       limit: 10,
-      businessSector: 'Tecnologia da Informação',
-      city: 'São Paulo',
+      businessSector: filters?['business_sector'] ?? '',
+      city: city ?? 'Marília',
+      region: filters?['region'],
+      rankingMin: filters?['ranking_min'],
+      rankingMax: filters?['ranking_max'],
+      delivery: filters?['delivery'] == false ? null : filters?['delivery'],
+      inHomeService: filters?['in_home_service'] == false
+          ? null
+          : filters?['in_home_service'],
     );
 
     if (response.statusCode == 200) {
@@ -81,16 +100,21 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
-  Future<void> fetchEvents({required int page, required int limit}) async {
+  Future<void> fetchEvents(
+      {Map<String, dynamic>? filters,
+      required int page,
+      required int limit}) async {
+    setState(() {
+      isLoadingEvents = true;
+    });
+
+    String city = filters?['city'];
+
     final token = await authService.getAccessToken();
-    final response = await http.get(
-      Uri.parse(ApiConstants.eventsEndpoint
-          .replaceFirst('{page}', '$page')
-          .replaceFirst('{limit}', '$limit')),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+    final response = await eventService.getEvents(
+      page: page,
+      limit: limit,
+      city: city,
     );
 
     if (response.statusCode == 200) {
@@ -102,6 +126,7 @@ class _HomeContentState extends State<HomeContent> {
       setState(() {
         isLoadingEvents = false;
       });
+      _showErrorToast('Erro ao carregar os eventos.');
     }
   }
 

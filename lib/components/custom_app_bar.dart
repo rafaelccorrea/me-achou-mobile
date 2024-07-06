@@ -3,8 +3,11 @@ import 'package:meachou/components/store_filter.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Function(Map<String, dynamic>) onFilter;
+  final Function onClearFilters;
 
-  const CustomAppBar({Key? key, required this.onFilter}) : super(key: key);
+  const CustomAppBar(
+      {Key? key, required this.onFilter, required this.onClearFilters})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +75,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                           padding: EdgeInsets.only(
                             bottom: MediaQuery.of(context).viewInsets.bottom,
                           ),
-                          child: StoreFilterForm(onFilter: onFilter),
+                          child: StoreFilterForm(
+                            onFilter: onFilter,
+                            onClearFilters: onClearFilters,
+                          ),
                         ),
                       );
                     },

@@ -44,6 +44,8 @@ class StoreService {
       if (rankingMax != null) 'ranking_max': rankingMax.toString(),
     };
 
+    print('paramssssssssssssssssssssssssssssssssss $queryParams');
+
     final uri = Uri.parse(
         '${ApiConstants.getStoresEndpoint}?${Uri(queryParameters: queryParams).query}');
 

@@ -4,8 +4,13 @@ import 'dart:convert';
 
 class StoreFilterForm extends StatefulWidget {
   final Function(Map<String, dynamic>) onFilter;
+  final Function onClearFilters;
 
-  const StoreFilterForm({Key? key, required this.onFilter}) : super(key: key);
+  const StoreFilterForm({
+    Key? key,
+    required this.onFilter,
+    required this.onClearFilters,
+  }) : super(key: key);
 
   @override
   _StoreFilterFormState createState() => _StoreFilterFormState();
@@ -37,7 +42,6 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
     {'display': 'Zona Oeste', 'value': 'ZONA_OESTE'},
   ];
   final List<String> _rankingOptions = ['1', '2', '3', '4', '5', '6', '7'];
-  bool _categoryError = false;
 
   @override
   void initState() {
@@ -113,19 +117,9 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
                     (value) {
                       setState(() {
                         _selectedBusinessSector = value;
-                        _categoryError = false;
                       });
                     },
-                    isRequired: true,
                   ),
-                  if (_categoryError)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        'Por favor, selecione uma categoria',
-                        style: TextStyle(color: Colors.red, fontSize: 12),
-                      ),
-                    ),
                   const SizedBox(height: 16.0),
                   _buildCategory(
                     'Região',
@@ -196,7 +190,10 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         ElevatedButton(
-                          onPressed: _clearFilters,
+                          onPressed: () {
+                            _clearFilters();
+                            widget.onClearFilters();
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.redAccent,
                             padding: const EdgeInsets.symmetric(
@@ -234,12 +231,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
   }
 
   void _applyFilter() {
-    setState(() {
-      _categoryError =
-          _selectedBusinessSector == null || _selectedBusinessSector!.isEmpty;
-    });
-
-    if (_formKey.currentState!.validate() && !_categoryError) {
+    if (_formKey.currentState!.validate()) {
       Map<String, dynamic> filters = {
         'business_sector': _selectedBusinessSector,
         'delivery': _delivery,
@@ -264,7 +256,6 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
       _selectedRankingMax = null;
       _delivery = false;
       _inHomeService = false;
-      _categoryError = false;
     });
   }
 

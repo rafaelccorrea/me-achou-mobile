@@ -17,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _selectedIndex = 0;
+  Map<String, dynamic>? _filters;
 
   final List<Widget> _pages = [
     HomeContent(),
@@ -43,8 +44,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onFilter(Map<String, dynamic> filters) {
-    // Implement your filtering logic here
+    setState(() {
+      _filters = filters;
+      _pages[0] = HomeContent(filters: _filters);
+    });
     print('Filters applied: $filters');
+  }
+
+  void _onClearFilters() {
+    setState(() {
+      _filters = null;
+      _pages[0] = HomeContent(filters: _filters);
+    });
   }
 
   @override
@@ -94,6 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
           appBar: _selectedIndex == 0
               ? CustomAppBar(
                   onFilter: _onFilter, // Pass the filter function here
+                  onClearFilters:
+                      _onClearFilters, // Pass the clear filters function here
                 )
               : null,
           body: IndexedStack(
