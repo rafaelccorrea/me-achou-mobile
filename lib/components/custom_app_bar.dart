@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:meachou/components/store_filter.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CustomAppBar();
+  final Function(Map<String, dynamic>) onFilter;
+
+  const CustomAppBar({Key? key, required this.onFilter}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +57,26 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   fillColor: Colors.white,
                   hintText: 'Busque por lojas...',
                   prefixIcon: const Icon(Icons.search, color: Colors.black54),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.filter_list, color: Colors.black54),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(25.0),
+                          ),
+                        ),
+                        builder: (context) => Padding(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                          ),
+                          child: StoreFilterForm(onFilter: onFilter),
+                        ),
+                      );
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                     borderSide: BorderSide.none,
@@ -76,5 +99,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 150);
+  Size get preferredSize =>
+      const Size.fromHeight(kToolbarHeight + 150); // Adjust height as needed
 }

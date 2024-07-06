@@ -1,0 +1,375 @@
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class StoreFilterForm extends StatefulWidget {
+  final Function(Map<String, dynamic>) onFilter;
+
+  const StoreFilterForm({Key? key, required this.onFilter}) : super(key: key);
+
+  @override
+  _StoreFilterFormState createState() => _StoreFilterFormState();
+}
+
+class _StoreFilterFormState extends State<StoreFilterForm> {
+  final _formKey = GlobalKey<FormState>();
+
+  String? _selectedBusinessSector;
+  String? _selectedCity;
+  String? _selectedRegion;
+  int? _selectedRankingMin;
+  int? _selectedRankingMax;
+  bool _delivery = false;
+  bool _inHomeService = false;
+  List<String> _cities = [];
+  final List<String> _sectors = [
+    'Alimentos',
+    'Roupas',
+    'Tecnologia',
+    'Serviços',
+    'Educação'
+  ];
+  final List<Map<String, String>> _regions = [
+    {'display': 'Centro', 'value': 'CENTRO'},
+    {'display': 'Zona Norte', 'value': 'ZONA_NORTE'},
+    {'display': 'Zona Sul', 'value': 'ZONA_SUL'},
+    {'display': 'Zona Leste', 'value': 'ZONA_LESTE'},
+    {'display': 'Zona Oeste', 'value': 'ZONA_OESTE'},
+  ];
+  final List<String> _rankingOptions = ['1', '2', '3', '4', '5', '6', '7'];
+  bool _categoryError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCities();
+  }
+
+  Future<void> _fetchCities() async {
+    final response = await http.get(
+      Uri.parse(
+          'https://servicodados.ibge.gov.br/api/v1/localidades/estados/SP/municipios'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body) as List;
+      setState(() {
+        _cities = data.map((city) => city['nome'].toString()).toList();
+      });
+    } else {
+      throw Exception('Failed to load cities');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Filtros de lojas',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: Colors.blueAccent),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16.0),
+                  _buildCategory(
+                    'Categorias',
+                    _sectors,
+                    _selectedBusinessSector,
+                    (value) {
+                      setState(() {
+                        _selectedBusinessSector = value;
+                        _categoryError = false;
+                      });
+                    },
+                    isRequired: true,
+                  ),
+                  if (_categoryError)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'Por favor, selecione uma categoria',
+                        style: TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                  const SizedBox(height: 16.0),
+                  _buildCategory(
+                    'Região',
+                    _regions.map((region) => region['display']!).toList(),
+                    _selectedRegion != null
+                        ? _regions.firstWhere((region) =>
+                            region['value'] == _selectedRegion)['display']
+                        : null,
+                    (value) {
+                      final selectedRegion = _regions
+                          .firstWhere((region) => region['display'] == value);
+                      setState(() {
+                        _selectedRegion = selectedRegion['value'];
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16.0),
+                  _buildDropdownField(
+                    'Cidade',
+                    _selectedCity,
+                    _cities,
+                    (value) => setState(() {
+                      _selectedCity = value;
+                      if (_formKey.currentState != null) {
+                        _formKey.currentState!.validate();
+                      }
+                    }),
+                    isRequired: true,
+                  ),
+                  const SizedBox(height: 16.0),
+                  _buildCategory(
+                      'Classificação mínima',
+                      _getFilteredRankingOptions(maxValue: _selectedRankingMax),
+                      _selectedRankingMin?.toString(), (value) {
+                    setState(() {
+                      _selectedRankingMin = int.tryParse(value!);
+                    });
+                  }),
+                  const SizedBox(height: 16.0),
+                  _buildCategory(
+                      'Classificação máxima',
+                      _getFilteredRankingOptions(minValue: _selectedRankingMin),
+                      _selectedRankingMax?.toString(), (value) {
+                    setState(() {
+                      _selectedRankingMax = int.tryParse(value!);
+                      if (_selectedRankingMax != null &&
+                          (_selectedRankingMin == null ||
+                              _selectedRankingMin! > _selectedRankingMax!)) {
+                        _selectedRankingMin = _selectedRankingMax;
+                      }
+                    });
+                  }),
+                  const SizedBox(height: 16.0),
+                  _buildCheckbox('Faz entrega', _delivery, (value) {
+                    setState(() {
+                      _delivery = value!;
+                    });
+                  }),
+                  _buildCheckbox('Serviço em domicílio', _inHomeService,
+                      (value) {
+                    setState(() {
+                      _inHomeService = value!;
+                    });
+                  }),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _clearFilters,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0, vertical: 12.0),
+                            textStyle: const TextStyle(fontSize: 16),
+                          ),
+                          child: const Text(
+                            'Limpar Filtros',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: _applyFilter,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0, vertical: 12.0),
+                            textStyle: const TextStyle(fontSize: 16),
+                          ),
+                          child: const Text(
+                            'Aplicar Filtro',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _applyFilter() {
+    setState(() {
+      _categoryError =
+          _selectedBusinessSector == null || _selectedBusinessSector!.isEmpty;
+    });
+
+    if (_formKey.currentState!.validate() && !_categoryError) {
+      Map<String, dynamic> filters = {
+        'business_sector': _selectedBusinessSector,
+        'delivery': _delivery,
+        'in_home_service': _inHomeService,
+        'city': _selectedCity,
+        'region': _selectedRegion,
+        'ranking_min': _selectedRankingMin,
+        'ranking_max': _selectedRankingMax,
+      };
+
+      widget.onFilter(filters);
+      Navigator.of(context).pop(); // Close the modal after applying the filter
+    }
+  }
+
+  void _clearFilters() {
+    setState(() {
+      _selectedBusinessSector = null;
+      _selectedCity = null;
+      _selectedRegion = null;
+      _selectedRankingMin = null;
+      _selectedRankingMax = null;
+      _delivery = false;
+      _inHomeService = false;
+      _categoryError = false;
+    });
+  }
+
+  List<String> _getFilteredRankingOptions({int? minValue, int? maxValue}) {
+    int min = minValue ?? 1;
+    int max = maxValue ?? 7;
+    return _rankingOptions.where((option) {
+      int value = int.parse(option);
+      return value >= min && value <= max;
+    }).toList();
+  }
+
+  Widget _buildCategory(String title, List<String> options,
+      String? selectedValue, ValueChanged<String?> onChanged,
+      {bool isRequired = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8.0),
+        Wrap(
+          spacing: 8.0,
+          children: options.map((option) {
+            final isSelected = selectedValue == option;
+            return AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: ChoiceChip(
+                label: Text(option),
+                selected: isSelected,
+                onSelected: (selected) {
+                  if (selected) {
+                    onChanged(option);
+                  } else {
+                    onChanged(null);
+                  }
+                },
+                selectedColor: Colors.blueAccent.shade100,
+                labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black87),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField(String label, String? selectedValue,
+      List<String> items, ValueChanged<String?> onChanged,
+      {bool isRequired = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: DropdownButtonFormField<String>(
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.black),
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.lightBlueAccent),
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.lightBlueAccent),
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+        ),
+        value: selectedValue,
+        onChanged: onChanged,
+        items: items.map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value, style: TextStyle(color: Colors.black87)),
+          );
+        }).toList(),
+        validator: isRequired
+            ? (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, selecione $label';
+                }
+                return null;
+              }
+            : null,
+        dropdownColor: Colors.white,
+        iconEnabledColor: Colors.blueAccent,
+      ),
+    );
+  }
+
+  Widget _buildCheckbox(
+      String label, bool value, ValueChanged<bool?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Checkbox(
+            value: value,
+            onChanged: onChanged,
+            activeColor: Colors.blueAccent,
+          ),
+          Text(label, style: TextStyle(color: Colors.black)),
+        ],
+      ),
+    );
+  }
+}

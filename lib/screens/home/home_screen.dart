@@ -42,6 +42,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onFilter(Map<String, dynamic> filters) {
+    // Implement your filtering logic here
+    print('Filters applied: $filters');
+  }
+
   @override
   Widget build(BuildContext context) {
     final AuthService authService = Provider.of<AuthService>(context);
@@ -86,7 +91,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
         return Scaffold(
           key: _scaffoldKey,
-          appBar: _selectedIndex == 0 ? const CustomAppBar() : null,
+          appBar: _selectedIndex == 0
+              ? CustomAppBar(
+                  onFilter: _onFilter, // Pass the filter function here
+                )
+              : null,
           body: IndexedStack(
             index: _selectedIndex,
             children: _pages,
