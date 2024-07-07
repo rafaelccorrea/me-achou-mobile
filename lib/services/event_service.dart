@@ -32,8 +32,6 @@ class EventService {
     final uri = Uri.parse(
         '${ApiConstants.eventsEndpoint}?${Uri(queryParameters: queryParams).query}');
 
-    print('urllllllllllllllll $uri');
-
     return await http.get(
       uri,
       headers: <String, String>{

@@ -26,17 +26,18 @@ class _HomeContentState extends State<HomeContent> {
   bool isLoadingStores = true;
   bool isLoadingEvents = true;
   String? userStoreId;
+  String currentCity = 'Marília'; // Cidade padrão
   final AuthService authService = AuthService();
   final StoreService storeService = StoreService();
   final EventService eventService = EventService();
   final Map<String, ConfettiController> _confettiControllers = {};
+  Map<String, dynamic> _currentFilters = {}; // Armazenar filtros aplicados
 
   @override
   void initState() {
     super.initState();
     fetchUserStoreId();
-    fetchStores(filters: widget.filters);
-    fetchEvents(page: 1, limit: 10);
+    applyFilters(widget.filters);
   }
 
   @override
@@ -64,19 +65,29 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
+  Future<void> applyFilters(Map<String, dynamic>? filters) async {
+    setState(() {
+      _currentFilters = filters ?? {};
+    });
+    String? city = _currentFilters['city'];
+    setState(() {
+      currentCity = city ?? 'Marília';
+    });
+    fetchStores(filters: _currentFilters);
+    fetchEvents(filters: _currentFilters, page: 1, limit: 10);
+  }
+
   Future<void> fetchStores({Map<String, dynamic>? filters}) async {
     setState(() {
       isLoadingStores = true;
     });
-
-    String? city = filters?['city'];
 
     final token = await authService.getAccessToken();
     final response = await storeService.getStores(
       page: 1,
       limit: 10,
       businessSector: filters?['business_sector'] ?? '',
-      city: city ?? 'Marília',
+      city: currentCity,
       region: filters?['region'],
       rankingMin: filters?['ranking_min'],
       rankingMax: filters?['ranking_max'],
@@ -108,13 +119,11 @@ class _HomeContentState extends State<HomeContent> {
       isLoadingEvents = true;
     });
 
-    String city = filters?['city'];
-
     final token = await authService.getAccessToken();
     final response = await eventService.getEvents(
       page: page,
       limit: limit,
-      city: city,
+      city: currentCity,
     );
 
     if (response.statusCode == 200) {
@@ -126,7 +135,6 @@ class _HomeContentState extends State<HomeContent> {
       setState(() {
         isLoadingEvents = false;
       });
-      _showErrorToast('Erro ao carregar os eventos.');
     }
   }
 
@@ -221,38 +229,55 @@ class _HomeContentState extends State<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 40),
-          if (isLoadingEvents)
-            LoadingSkeletons()
-          else if (events.isEmpty)
-            isLoadingStores
-                ? LoadingSkeletons()
-                : StoreList(
-                    stores: stores,
-                    userStoreId: userStoreId,
-                    followStore: followStore,
-                    unfollowStore: unfollowStore,
-                    confettiControllers: _confettiControllers,
-                  )
-          else ...[
-            EventCarousel(events: events),
-            const SizedBox(height: 20),
-            isLoadingStores
-                ? LoadingSkeletons()
-                : StoreList(
-                    stores: stores,
-                    userStoreId: userStoreId,
-                    followStore: followStore,
-                    unfollowStore: unfollowStore,
-                    confettiControllers: _confettiControllers,
+    return Scaffold(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 40),
+            Row(
+              children: [
+                Spacer(),
+                Text(
+                  'Cidade: $currentCity',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                    fontStyle: FontStyle.italic,
                   ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            if (isLoadingEvents)
+              LoadingSkeletons()
+            else if (events.isEmpty)
+              isLoadingStores
+                  ? LoadingSkeletons()
+                  : StoreList(
+                      stores: stores,
+                      userStoreId: userStoreId,
+                      followStore: followStore,
+                      unfollowStore: unfollowStore,
+                      confettiControllers: _confettiControllers,
+                    )
+            else ...[
+              EventCarousel(events: events),
+              const SizedBox(height: 20),
+              isLoadingStores
+                  ? LoadingSkeletons()
+                  : StoreList(
+                      stores: stores,
+                      userStoreId: userStoreId,
+                      followStore: followStore,
+                      unfollowStore: unfollowStore,
+                      confettiControllers: _confettiControllers,
+                    ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

@@ -1,13 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:meachou/components/store_filter.dart';
 
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Function(Map<String, dynamic>) onFilter;
   final Function onClearFilters;
+  final Map<String, dynamic>
+      initialFilters; // Adicionando campo para filtros iniciais
 
-  const CustomAppBar(
-      {Key? key, required this.onFilter, required this.onClearFilters})
-      : super(key: key);
+  const CustomAppBar({
+    Key? key,
+    required this.onFilter,
+    required this.onClearFilters,
+    required this.initialFilters, // Adicionando campo para filtros iniciais
+  }) : super(key: key);
+
+  @override
+  _CustomAppBarState createState() => _CustomAppBarState();
+
+  @override
+  Size get preferredSize =>
+      const Size.fromHeight(kToolbarHeight + 150); // Adjust height as needed
+}
+
+class _CustomAppBarState extends State<CustomAppBar> {
+  late Map<String, dynamic> _currentFilters;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentFilters = Map<String, dynamic>.from(
+        widget.initialFilters); // Inicializa com os filtros iniciais
+  }
+
+  void _handleFilter(Map<String, dynamic> filters) {
+    setState(() {
+      _currentFilters = filters;
+    });
+    widget.onFilter(filters);
+  }
+
+  void _handleClearFilters() {
+    setState(() {
+      _currentFilters = {};
+    });
+    widget.onClearFilters();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,8 +113,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                             bottom: MediaQuery.of(context).viewInsets.bottom,
                           ),
                           child: StoreFilterForm(
-                            onFilter: onFilter,
-                            onClearFilters: onClearFilters,
+                            onFilter: _handleFilter,
+                            onClearFilters: _handleClearFilters,
+                            initialFilters: _currentFilters,
                           ),
                         ),
                       );
@@ -103,8 +141,4 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
     );
   }
-
-  @override
-  Size get preferredSize =>
-      const Size.fromHeight(kToolbarHeight + 150); // Adjust height as needed
 }

@@ -5,11 +5,13 @@ import 'dart:convert';
 class StoreFilterForm extends StatefulWidget {
   final Function(Map<String, dynamic>) onFilter;
   final Function onClearFilters;
+  final Map<String, dynamic> initialFilters;
 
   const StoreFilterForm({
     Key? key,
     required this.onFilter,
     required this.onClearFilters,
+    required this.initialFilters,
   }) : super(key: key);
 
   @override
@@ -47,6 +49,19 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
   void initState() {
     super.initState();
     _fetchCities();
+    _loadInitialFilters(); // Carregar os filtros iniciais
+  }
+
+  void _loadInitialFilters() {
+    setState(() {
+      _selectedBusinessSector = widget.initialFilters['business_sector'];
+      _selectedCity = widget.initialFilters['city'];
+      _selectedRegion = widget.initialFilters['region'];
+      _selectedRankingMin = widget.initialFilters['ranking_min'];
+      _selectedRankingMax = widget.initialFilters['ranking_max'];
+      _delivery = widget.initialFilters['delivery'] ?? false;
+      _inHomeService = widget.initialFilters['in_home_service'] ?? false;
+    });
   }
 
   Future<void> _fetchCities() async {
@@ -78,7 +93,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
               color: Colors.grey.withOpacity(0.3),
               spreadRadius: 2,
               blurRadius: 5,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -93,7 +108,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         'Filtros de lojas',
                         style: TextStyle(
                           fontSize: 18,
@@ -102,7 +117,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close, color: Colors.blueAccent),
+                        icon: const Icon(Icons.close, color: Colors.blueAccent),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
@@ -147,7 +162,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
                         _formKey.currentState!.validate();
                       }
                     }),
-                    isRequired: true,
+                    isRequired: false,
                   ),
                   const SizedBox(height: 16.0),
                   _buildCategory(
@@ -193,6 +208,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
                           onPressed: () {
                             _clearFilters();
                             widget.onClearFilters();
+                            Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.redAccent,
@@ -236,7 +252,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
         'business_sector': _selectedBusinessSector,
         'delivery': _delivery,
         'in_home_service': _inHomeService,
-        'city': _selectedCity,
+        'city': _selectedCity ?? 'Marília', // Cidade padrão
         'region': _selectedRegion,
         'ranking_min': _selectedRankingMin,
         'ranking_max': _selectedRankingMax,
@@ -282,7 +298,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
           children: options.map((option) {
             final isSelected = selectedValue == option;
             return AnimatedContainer(
-              duration: Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
               child: ChoiceChip(
                 label: Text(option),
@@ -313,13 +329,13 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
       child: DropdownButtonFormField<String>(
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: Colors.black),
+          labelStyle: const TextStyle(color: Colors.black),
           border: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.lightBlueAccent),
+            borderSide: const BorderSide(color: Colors.lightBlueAccent),
             borderRadius: BorderRadius.circular(12.0),
           ),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.lightBlueAccent),
+            borderSide: const BorderSide(color: Colors.lightBlueAccent),
             borderRadius: BorderRadius.circular(12.0),
           ),
           filled: true,
@@ -330,7 +346,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
         items: items.map<DropdownMenuItem<String>>((String value) {
           return DropdownMenuItem<String>(
             value: value,
-            child: Text(value, style: TextStyle(color: Colors.black87)),
+            child: Text(value, style: const TextStyle(color: Colors.black87)),
           );
         }).toList(),
         validator: isRequired
@@ -358,7 +374,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
             onChanged: onChanged,
             activeColor: Colors.blueAccent,
           ),
-          Text(label, style: TextStyle(color: Colors.black)),
+          Text(label, style: const TextStyle(color: Colors.black)),
         ],
       ),
     );

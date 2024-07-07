@@ -104,9 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
           key: _scaffoldKey,
           appBar: _selectedIndex == 0
               ? CustomAppBar(
-                  onFilter: _onFilter, // Pass the filter function here
-                  onClearFilters:
-                      _onClearFilters, // Pass the clear filters function here
+                  onFilter: _onFilter,
+                  onClearFilters: _onClearFilters,
+                  initialFilters: _filters ?? {},
                 )
               : null,
           body: IndexedStack(
