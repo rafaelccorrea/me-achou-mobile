@@ -26,12 +26,12 @@ class _HomeContentState extends State<HomeContent> {
   bool isLoadingStores = true;
   bool isLoadingEvents = true;
   String? userStoreId;
-  String currentCity = 'Marília'; // Cidade padrão
+  String currentCity = 'Marília';
   final AuthService authService = AuthService();
   final StoreService storeService = StoreService();
   final EventService eventService = EventService();
   final Map<String, ConfettiController> _confettiControllers = {};
-  Map<String, dynamic> _currentFilters = {}; // Armazenar filtros aplicados
+  Map<String, dynamic> _currentFilters = {};
 
   @override
   void initState() {
@@ -238,10 +238,10 @@ class _HomeContentState extends State<HomeContent> {
             const SizedBox(height: 40),
             Row(
               children: [
-                Spacer(),
+                const Spacer(),
                 Text(
                   'Cidade: $currentCity',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.grey,
                     fontWeight: FontWeight.bold,

@@ -15,12 +15,12 @@ void main() async {
         ChangeNotifierProvider(create: (_) => DrawerProvider()),
         Provider<AuthService>(create: (_) => AuthService()),
       ],
-      child: MyApp(),
+      child: MeAchou(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MeAchou extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

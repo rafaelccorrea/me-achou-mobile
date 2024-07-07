@@ -52,7 +52,9 @@ class StoreCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(store['address']['region'] ?? 'Região não especificada',
+            Text(
+                _formatRegion(store['address']['region']) ??
+                    'Região não especificada',
                 style: const TextStyle(fontSize: 14)),
             _buildStarRating(store['ranking']),
             const SizedBox(height: 4),
@@ -114,6 +116,14 @@ class StoreCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String? _formatRegion(String? region) {
+    if (region == null) return null;
+    List<String> parts = region.split('_');
+    return parts
+        .map((part) => part[0].toUpperCase() + part.substring(1).toLowerCase())
+        .join(' ');
   }
 
   Widget _buildStarRating(int ranking) {
