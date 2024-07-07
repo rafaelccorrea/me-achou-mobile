@@ -4,22 +4,20 @@ import 'package:meachou/components/store_filter.dart';
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Function(Map<String, dynamic>) onFilter;
   final Function onClearFilters;
-  final Map<String, dynamic>
-      initialFilters; // Adicionando campo para filtros iniciais
+  final Map<String, dynamic> initialFilters;
 
   const CustomAppBar({
     Key? key,
     required this.onFilter,
     required this.onClearFilters,
-    required this.initialFilters, // Adicionando campo para filtros iniciais
+    required this.initialFilters,
   }) : super(key: key);
 
   @override
   _CustomAppBarState createState() => _CustomAppBarState();
 
   @override
-  Size get preferredSize =>
-      const Size.fromHeight(kToolbarHeight + 150); // Adjust height as needed
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 150);
 }
 
 class _CustomAppBarState extends State<CustomAppBar> {
@@ -28,8 +26,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
   @override
   void initState() {
     super.initState();
-    _currentFilters = Map<String, dynamic>.from(
-        widget.initialFilters); // Inicializa com os filtros iniciais
+    _currentFilters = Map<String, dynamic>.from(widget.initialFilters);
   }
 
   void _handleFilter(Map<String, dynamic> filters) {
