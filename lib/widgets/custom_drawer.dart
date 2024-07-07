@@ -30,7 +30,7 @@ class CustomDrawer extends StatelessWidget {
               child: Align(
                 alignment: Alignment.topRight,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.black),
+                  icon: const Icon(Icons.close, color: Colors.grey),
                   onPressed: () {
                     Navigator.of(context).pop(); // Fechar o drawer
                   },
@@ -55,7 +55,7 @@ class CustomDrawer extends StatelessWidget {
                   Text(
                     userName,
                     style: const TextStyle(
-                      color: Colors.black,
+                      color: Colors.grey,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -147,10 +147,10 @@ class CustomDrawer extends StatelessWidget {
             ),
             Divider(color: Colors.grey[300], thickness: 0.5),
             ListTile(
-              leading: const Icon(Icons.logout, color: Colors.black),
+              leading: const Icon(Icons.logout, color: Colors.grey),
               title: const Text(
                 'Logout',
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(color: Colors.grey),
               ),
               onTap: () async {
                 await authService.logout();
@@ -171,10 +171,10 @@ class CustomDrawer extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: ListTile(
-        leading: Icon(icon, color: Colors.black),
+        leading: Icon(icon, color: Colors.grey),
         title: Text(
           text,
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.grey[700]),
         ),
         onTap: () {
           // Navegar para a tela correspondente
@@ -188,10 +188,10 @@ class CustomDrawer extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: ListTile(
-        leading: Icon(icon, color: Colors.black),
+        leading: Icon(icon, color: Colors.grey),
         title: Text(
           text,
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.grey[700]),
         ),
         onTap: () {
           // Navegar para a tela correspondente
@@ -207,10 +207,10 @@ class CustomDrawer extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        leading: Icon(icon, color: Colors.black),
+        leading: Icon(icon, color: Colors.grey),
         title: Text(
           text,
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.grey[700]),
         ),
         childrenPadding: const EdgeInsets.only(left: 16.0),
         children: children,
