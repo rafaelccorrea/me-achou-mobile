@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:meachou/components/home/event_carousel.dart';
 import 'package:meachou/components/home/loading_skeletons.dart';
 import 'package:meachou/components/home/store_list.dart';
+import 'package:meachou/components/loading/loading_dots.dart';
 import 'package:meachou/constants/api_constants.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:meachou/services/stores_service.dart';
@@ -25,6 +26,7 @@ class _HomeContentState extends State<HomeContent> {
   List<dynamic> events = [];
   bool isLoadingStores = true;
   bool isLoadingEvents = true;
+  bool isLoadingMoreStores = false;
   String? userStoreId;
   String currentCity = 'Marília';
   final AuthService authService = AuthService();
@@ -32,17 +34,29 @@ class _HomeContentState extends State<HomeContent> {
   final EventService eventService = EventService();
   final Map<String, ConfettiController> _confettiControllers = {};
   Map<String, dynamic> _currentFilters = {};
+  int currentPage = 1;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     fetchUserStoreId();
     applyFilters(widget.filters);
+    _scrollController.addListener(() {
+      if (_scrollController.position.atEdge) {
+        bool isBottom = _scrollController.position.pixels ==
+            _scrollController.position.maxScrollExtent;
+        if (isBottom && !isLoadingMoreStores) {
+          loadMoreStores();
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
     _confettiControllers.forEach((key, controller) => controller.dispose());
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -80,6 +94,7 @@ class _HomeContentState extends State<HomeContent> {
   Future<void> fetchStores({Map<String, dynamic>? filters}) async {
     setState(() {
       isLoadingStores = true;
+      currentPage = 1;
     });
 
     final token = await authService.getAccessToken();
@@ -108,6 +123,43 @@ class _HomeContentState extends State<HomeContent> {
         isLoadingStores = false;
       });
       _showErrorToast('Erro ao carregar as lojas.');
+    }
+  }
+
+  Future<void> loadMoreStores() async {
+    setState(() {
+      isLoadingMoreStores = true;
+    });
+
+    final token = await authService.getAccessToken();
+    final response = await storeService.getStores(
+      page: currentPage + 1,
+      limit: 10,
+      businessSector: _currentFilters['business_sector'] ?? '',
+      city: currentCity,
+      region: _currentFilters['region'],
+      rankingMin: _currentFilters['ranking_min'],
+      rankingMax: _currentFilters['ranking_max'],
+      delivery: _currentFilters['delivery'] == false
+          ? null
+          : _currentFilters['delivery'],
+      inHomeService: _currentFilters['in_home_service'] == false
+          ? null
+          : _currentFilters['in_home_service'],
+    );
+
+    if (response.statusCode == 200) {
+      final newStores = json.decode(response.body)['data'];
+      setState(() {
+        stores.addAll(newStores);
+        currentPage += 1;
+        isLoadingMoreStores = false;
+      });
+    } else {
+      setState(() {
+        isLoadingMoreStores = false;
+      });
+      _showErrorToast('Erro ao carregar mais lojas.');
     }
   }
 
@@ -231,6 +283,7 @@ class _HomeContentState extends State<HomeContent> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
+        controller: _scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -275,6 +328,12 @@ class _HomeContentState extends State<HomeContent> {
                       unfollowStore: unfollowStore,
                       confettiControllers: _confettiControllers,
                     ),
+            ],
+            if (isLoadingMoreStores) ...[
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Center(child: LoadingDots()),
+              ),
             ],
           ],
         ),
