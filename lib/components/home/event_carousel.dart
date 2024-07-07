@@ -124,11 +124,22 @@ class EventCarousel extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: NetworkImage(event['image']),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [Colors.blue, Colors.green, Colors.white],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 47, // Adjust the radius to fit within the border
+                    backgroundImage: NetworkImage(event['image']),
+                  ),
                 ),
-                const SizedBox(height: 8.0),
+                const SizedBox(height: 5.0),
                 Flexible(
                   child: Text(
                     truncatedTitle,
