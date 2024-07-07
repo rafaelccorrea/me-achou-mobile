@@ -22,13 +22,7 @@ class CustomDrawer extends StatelessWidget {
 
     return Drawer(
       child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blueAccent, Colors.lightBlueAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: Colors.white,
         child: Column(
           children: <Widget>[
             Padding(
@@ -36,7 +30,7 @@ class CustomDrawer extends StatelessWidget {
               child: Align(
                 alignment: Alignment.topRight,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: const Icon(Icons.close, color: Colors.black),
                   onPressed: () {
                     Navigator.of(context).pop(); // Fechar o drawer
                   },
@@ -44,7 +38,6 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
             Container(
-              decoration: const BoxDecoration(),
               padding: EdgeInsets.zero,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -56,13 +49,13 @@ class CustomDrawer extends StatelessWidget {
                         ? NetworkImage(userAvatarUrl!)
                         : const AssetImage('assets/default_avatar.png')
                             as ImageProvider,
-                    backgroundColor: Colors.white,
+                    backgroundColor: Colors.grey[300],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     userName,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Colors.black,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -71,25 +64,93 @@ class CustomDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            const Divider(color: Colors.white54),
-            ListTile(
-              leading: const Icon(Icons.home, color: Colors.white),
-              title: const Text(
-                'Home',
-                style: TextStyle(color: Colors.white),
+            Divider(color: Colors.grey[300], thickness: 0.5),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.person,
+                      text: 'Meu Perfil',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.star_rate,
+                      text: 'Avaliações',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.article,
+                      text: 'Publicações',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.group,
+                      text: 'Seguindo',
+                    ),
+                    _buildExpansionTileWithoutBorder(
+                      context,
+                      icon: Icons.store,
+                      text: 'Minha Loja',
+                      children: [
+                        _buildDrawerSubItem(
+                          context,
+                          icon: Icons.person_outline,
+                          text: 'Perfil',
+                        ),
+                        _buildDrawerSubItem(
+                          context,
+                          icon: Icons.article_outlined,
+                          text: 'Publicações',
+                        ),
+                        _buildDrawerSubItem(
+                          context,
+                          icon: Icons.subscriptions,
+                          text: 'Assinatura',
+                        ),
+                        _buildDrawerSubItem(
+                          context,
+                          icon: Icons.rate_review,
+                          text: 'Avaliações',
+                        ),
+                        _buildDrawerSubItem(
+                          context,
+                          icon: Icons.campaign,
+                          text: 'Campanhas',
+                        ),
+                        _buildDrawerSubItem(
+                          context,
+                          icon: Icons.event,
+                          text: 'Eventos',
+                        ),
+                        _buildDrawerSubItem(
+                          context,
+                          icon: Icons.payment,
+                          text: 'Cobranças',
+                        ),
+                        _buildDrawerSubItem(
+                          context,
+                          icon: Icons.receipt,
+                          text: 'Faturas',
+                        ),
+                      ],
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.event_available,
+                      text: 'Eventos',
+                    ),
+                  ],
+                ),
               ),
-              onTap: () {
-                Navigator.pop(context);
-              },
             ),
-            // Add other drawer items here
-            const Spacer(),
-            const Divider(color: Colors.white54),
+            Divider(color: Colors.grey[300], thickness: 0.5),
             ListTile(
-              leading: const Icon(Icons.logout, color: Colors.white),
+              leading: const Icon(Icons.logout, color: Colors.black),
               title: const Text(
                 'Logout',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.black),
               ),
               onTap: () async {
                 await authService.logout();
@@ -101,6 +162,58 @@ class CustomDrawer extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(BuildContext context,
+      {required IconData icon, required String text}) {
+    return Container(
+      color: Colors.white,
+      child: ListTile(
+        leading: Icon(icon, color: Colors.black),
+        title: Text(
+          text,
+          style: TextStyle(color: Colors.black),
+        ),
+        onTap: () {
+          // Navegar para a tela correspondente
+        },
+      ),
+    );
+  }
+
+  Widget _buildDrawerSubItem(BuildContext context,
+      {required IconData icon, required String text}) {
+    return Container(
+      color: Colors.white,
+      child: ListTile(
+        leading: Icon(icon, color: Colors.black),
+        title: Text(
+          text,
+          style: TextStyle(color: Colors.black),
+        ),
+        onTap: () {
+          // Navegar para a tela correspondente
+        },
+      ),
+    );
+  }
+
+  Widget _buildExpansionTileWithoutBorder(BuildContext context,
+      {required IconData icon,
+      required String text,
+      required List<Widget> children}) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        leading: Icon(icon, color: Colors.black),
+        title: Text(
+          text,
+          style: TextStyle(color: Colors.black),
+        ),
+        childrenPadding: const EdgeInsets.only(left: 16.0),
+        children: children,
       ),
     );
   }

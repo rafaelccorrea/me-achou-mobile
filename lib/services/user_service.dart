@@ -47,6 +47,4 @@ class UserService {
       }),
     );
   }
-
-  // Métodos adicionais conforme necessário para operações de usuário
 }

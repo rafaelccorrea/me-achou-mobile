@@ -75,7 +75,7 @@ class _HomeContentState extends State<HomeContent> {
         userStoreId = json.decode(response.body)['id'];
       });
     } else {
-      _showErrorToast('Erro ao carregar ID da loja do usuário.');
+      return;
     }
   }
 
