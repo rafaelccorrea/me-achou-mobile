@@ -55,4 +55,25 @@ class StoreService {
       },
     );
   }
+
+  Future<Map<String, dynamic>?> getStoreDetails() async {
+    final String? token = await authService.getAccessToken();
+    final uri = Uri.parse(ApiConstants.storeDetailsEndpoint);
+
+    final response = await http.get(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else if (response.statusCode == 404) {
+      return null;
+    } else {
+      throw Exception('Failed to load store details');
+    }
+  }
 }

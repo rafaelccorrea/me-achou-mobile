@@ -20,149 +20,170 @@ class CustomDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     AuthService authService = Provider.of<AuthService>(context, listen: false);
 
-    return Drawer(
-      child: Container(
-        color: Colors.white,
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 16.0, right: 16.0),
-              child: Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.grey),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Fechar o drawer
-                  },
-                ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.zero,
+    return FutureBuilder<bool>(
+      future: authService.hasStore(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error loading store information'));
+        } else {
+          bool hasStore = snapshot.data ?? false;
+
+          return Drawer(
+            child: Container(
+              color: Colors.white,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 10), // Add top padding
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: userAvatarUrl != null
-                        ? NetworkImage(userAvatarUrl!)
-                        : const AssetImage('assets/default_avatar.png')
-                            as ImageProvider,
-                    backgroundColor: Colors.grey[300],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    userName,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16.0, right: 16.0),
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Fechar o drawer
+                        },
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8), // Add bottom padding
+                  Container(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 10), // Add top padding
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundImage: userAvatarUrl != null
+                              ? NetworkImage(userAvatarUrl!)
+                              : const AssetImage('assets/default_avatar.png')
+                                  as ImageProvider,
+                          backgroundColor: Colors.grey[300],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          userName,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8), // Add bottom padding
+                      ],
+                    ),
+                  ),
+                  Divider(color: Colors.grey[300], thickness: 0.5),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildDrawerItem(
+                            context,
+                            icon: Icons.person,
+                            text: 'Meu Perfil',
+                          ),
+                          _buildDrawerItem(
+                            context,
+                            icon: Icons.star_rate,
+                            text: 'Avaliações',
+                          ),
+                          _buildDrawerItem(
+                            context,
+                            icon: Icons.article,
+                            text: 'Publicações',
+                          ),
+                          _buildDrawerItem(
+                            context,
+                            icon: Icons.group,
+                            text: 'Seguindo',
+                          ),
+                          if (hasStore)
+                            _buildExpansionTileWithoutBorder(
+                              context,
+                              icon: Icons.store,
+                              text: 'Minha Loja',
+                              children: [
+                                _buildDrawerSubItem(
+                                  context,
+                                  icon: Icons.person_outline,
+                                  text: 'Perfil',
+                                ),
+                                _buildDrawerSubItem(
+                                  context,
+                                  icon: Icons.article_outlined,
+                                  text: 'Publicações',
+                                ),
+                                _buildDrawerSubItem(
+                                  context,
+                                  icon: Icons.subscriptions,
+                                  text: 'Assinatura',
+                                ),
+                                _buildDrawerSubItem(
+                                  context,
+                                  icon: Icons.rate_review,
+                                  text: 'Avaliações',
+                                ),
+                                _buildDrawerSubItem(
+                                  context,
+                                  icon: Icons.campaign,
+                                  text: 'Campanhas',
+                                ),
+                                _buildDrawerSubItem(
+                                  context,
+                                  icon: Icons.event,
+                                  text: 'Eventos',
+                                ),
+                                _buildDrawerSubItem(
+                                  context,
+                                  icon: Icons.payment,
+                                  text: 'Cobranças',
+                                ),
+                                _buildDrawerSubItem(
+                                  context,
+                                  icon: Icons.receipt,
+                                  text: 'Faturas',
+                                ),
+                              ],
+                            )
+                          else
+                            _buildDrawerItem(
+                              context,
+                              icon: Icons.store_mall_directory,
+                              text: 'Criar Minha Loja',
+                            ),
+                          _buildDrawerItem(
+                            context,
+                            icon: Icons.event_available,
+                            text: 'Eventos',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Divider(color: Colors.grey[300], thickness: 0.5),
+                  ListTile(
+                    leading: const Icon(Icons.logout, color: Colors.grey),
+                    title: const Text(
+                      'Logout',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    onTap: () async {
+                      await authService.logout();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginScreen()),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
-            Divider(color: Colors.grey[300], thickness: 0.5),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.person,
-                      text: 'Meu Perfil',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.star_rate,
-                      text: 'Avaliações',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.article,
-                      text: 'Publicações',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.group,
-                      text: 'Seguindo',
-                    ),
-                    _buildExpansionTileWithoutBorder(
-                      context,
-                      icon: Icons.store,
-                      text: 'Minha Loja',
-                      children: [
-                        _buildDrawerSubItem(
-                          context,
-                          icon: Icons.person_outline,
-                          text: 'Perfil',
-                        ),
-                        _buildDrawerSubItem(
-                          context,
-                          icon: Icons.article_outlined,
-                          text: 'Publicações',
-                        ),
-                        _buildDrawerSubItem(
-                          context,
-                          icon: Icons.subscriptions,
-                          text: 'Assinatura',
-                        ),
-                        _buildDrawerSubItem(
-                          context,
-                          icon: Icons.rate_review,
-                          text: 'Avaliações',
-                        ),
-                        _buildDrawerSubItem(
-                          context,
-                          icon: Icons.campaign,
-                          text: 'Campanhas',
-                        ),
-                        _buildDrawerSubItem(
-                          context,
-                          icon: Icons.event,
-                          text: 'Eventos',
-                        ),
-                        _buildDrawerSubItem(
-                          context,
-                          icon: Icons.payment,
-                          text: 'Cobranças',
-                        ),
-                        _buildDrawerSubItem(
-                          context,
-                          icon: Icons.receipt,
-                          text: 'Faturas',
-                        ),
-                      ],
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.event_available,
-                      text: 'Eventos',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Divider(color: Colors.grey[300], thickness: 0.5),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.grey),
-              title: const Text(
-                'Logout',
-                style: TextStyle(color: Colors.grey),
-              ),
-              onTap: () async {
-                await authService.logout();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+          );
+        }
+      },
     );
   }
 

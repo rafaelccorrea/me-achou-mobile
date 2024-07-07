@@ -28,6 +28,9 @@ class AuthService {
         value: json.encode(decodedToken),
       );
 
+      bool hasStore = await _checkUserStore();
+      await secureStorage.write(key: 'hasStore', value: hasStore.toString());
+
       return true;
     } else {
       return false;
@@ -55,8 +58,32 @@ class AuthService {
         key: 'user',
         value: json.encode(decodedToken),
       );
+
+      bool hasStore = await _checkUserStore();
+      await secureStorage.write(key: 'hasStore', value: hasStore.toString());
     } else {
       // Login com Google falhou
+    }
+  }
+
+  Future<bool> _checkUserStore() async {
+    final String? token = await getAccessToken();
+    final uri = Uri.parse(ApiConstants.storeDetailsEndpoint);
+
+    final response = await http.get(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    } else if (response.statusCode == 404) {
+      return false;
+    } else {
+      throw Exception('Failed to check store details');
     }
   }
 
@@ -76,10 +103,16 @@ class AuthService {
     return await secureStorage.read(key: 'refreshToken');
   }
 
+  Future<bool> hasStore() async {
+    final hasStoreString = await secureStorage.read(key: 'hasStore');
+    return hasStoreString == 'true';
+  }
+
   Future<void> logout() async {
     await secureStorage.delete(key: 'accessToken');
     await secureStorage.delete(key: 'refreshToken');
     await secureStorage.delete(key: 'user');
+    await secureStorage.delete(key: 'hasStore');
   }
 
   Map<String, dynamic> _decodeJwt(String token) {
