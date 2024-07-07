@@ -29,63 +29,65 @@ class EventCarousel extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () => showDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    builder: (context) => GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Dialog(
-                        backgroundColor: Colors.transparent,
-                        insetPadding: const EdgeInsets.all(10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: PhotoView(
-                            imageProvider: NetworkImage(event['image']),
-                            backgroundDecoration: const BoxDecoration(
-                              color: Colors.transparent,
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () => showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (context) => GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Dialog(
+                          backgroundColor: Colors.transparent,
+                          insetPadding: const EdgeInsets.all(10),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: PhotoView(
+                              imageProvider: NetworkImage(event['image']),
+                              backgroundDecoration: const BoxDecoration(
+                                color: Colors.transparent,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: Image.network(event['image']),
+                    ),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0),
-                    child: Image.network(event['image']),
+                  const SizedBox(height: 16.0),
+                  Text(
+                    'Data: $dateRange',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16.0),
-                Text(
-                  'Data: $dateRange',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
+                  const SizedBox(height: 16.0),
+                  const Text(
+                    'Descrição do Evento',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16.0),
-                const Text(
-                  'Descrição do Evento',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                  const SizedBox(height: 8.0),
+                  Text(
+                    event['description'] ?? 'Sem descrição disponível.',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8.0),
-                Text(
-                  event['description'] ?? 'Sem descrição disponível.',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
             actions: [
               TextButton(
@@ -110,7 +112,7 @@ class EventCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 160,
+      height: 130,
       child: CarouselSlider.builder(
         itemCount: events.length,
         itemBuilder: (context, index, realIdx) {
@@ -135,7 +137,7 @@ class EventCarousel extends StatelessWidget {
                     ),
                   ),
                   child: CircleAvatar(
-                    radius: 47, // Adjust the radius to fit within the border
+                    radius: 40,
                     backgroundImage: NetworkImage(event['image']),
                   ),
                 ),
@@ -156,7 +158,7 @@ class EventCarousel extends StatelessWidget {
           );
         },
         options: CarouselOptions(
-          height: 140,
+          height: 200,
           autoPlay: true,
           enlargeCenterPage: true,
           aspectRatio: 1.0,
