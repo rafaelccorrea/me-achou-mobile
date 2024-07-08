@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meachou/screens/login_screen.dart';
+import 'package:meachou/screens/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/services/auth_service.dart';
 
@@ -24,9 +25,9 @@ class CustomDrawer extends StatelessWidget {
       future: authService.hasStore(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
-          return Center(child: Text('Error loading store information'));
+          return const Center(child: Text('Error loading store information'));
         } else {
           bool hasStore = snapshot.data ?? false;
 
@@ -83,6 +84,11 @@ class CustomDrawer extends StatelessWidget {
                             context,
                             icon: Icons.person,
                             text: 'Meu Perfil',
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => const ProfileScreen(),
+                              ));
+                            },
                           ),
                           _buildDrawerItem(
                             context,
@@ -188,7 +194,7 @@ class CustomDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawerItem(BuildContext context,
-      {required IconData icon, required String text}) {
+      {required IconData icon, required String text, VoidCallback? onTap}) {
     return Container(
       color: Colors.white,
       child: ListTile(
@@ -197,9 +203,10 @@ class CustomDrawer extends StatelessWidget {
           text,
           style: TextStyle(color: Colors.grey[700]),
         ),
-        onTap: () {
-          // Navegar para a tela correspondente
-        },
+        onTap: onTap ??
+            () {
+              // Navegar para a tela correspondente
+            },
       ),
     );
   }
