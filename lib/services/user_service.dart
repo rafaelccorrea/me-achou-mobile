@@ -49,7 +49,7 @@ class UserService {
   }
 
   Future<Map<String, dynamic>> getUserDetails() async {
-    final token = await secureStorage.read(key: 'authToken');
+    final token = await secureStorage.read(key: 'accessToken');
     final response = await http.get(
       Uri.parse(ApiConstants.userDetailsEndpoint),
       headers: {
@@ -63,5 +63,22 @@ class UserService {
     } else {
       throw Exception('Failed to load user details');
     }
+  }
+
+  Future<Map<String, dynamic>> deleteUser() async {
+    final token = await secureStorage.read(key: 'accessToken');
+
+    final response = await http.delete(
+      Uri.parse(ApiConstants.userDeleteEndpoint),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    return {
+      'statusCode': response.statusCode,
+      'body': jsonDecode(response.body)
+    };
   }
 }

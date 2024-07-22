@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'settings_screen.dart'; // Adicionar a importação da nova tela
+import 'package:meachou/components/custom_bottom_navigation_bar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? user;
   bool isLoading = true;
   String errorMessage = '';
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -42,6 +44,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
         errorMessage = 'Falha ao carregar os detalhes do usuário';
         isLoading = false;
       });
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // Navegação para outras telas com base no índice do item selecionado
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/publications');
+        break;
+      case 2:
+        Navigator.pushReplacementNamed(context, '/following');
+        break;
+      case 3:
+        Navigator.pushReplacementNamed(context, '/reviews');
+        break;
     }
   }
 
@@ -233,6 +256,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
     );
   }
 
@@ -263,9 +290,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildDivider() {
-    return Container(
+    return const SizedBox(
       height: 50,
-      child: const VerticalDivider(
+      child: VerticalDivider(
         color: Colors.grey,
         thickness: 1,
       ),
