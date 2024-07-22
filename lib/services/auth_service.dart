@@ -113,9 +113,6 @@ class AuthService {
     final refreshToken = await getRefreshToken();
     final userId = (await getUser())?['id'];
 
-    print('Response refreshToken: ${refreshToken}');
-    print('Response userId: ${userId}');
-
     if (refreshToken != null && userId != null) {
       final response = await http.post(
         Uri.parse(ApiConstants.refreshTokenEndpoint),
@@ -125,8 +122,6 @@ class AuthService {
         }),
         headers: {'Content-Type': 'application/json'},
       );
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
       if (response.statusCode == 201) {
         final jsonData = json.decode(response.body);
 
@@ -135,6 +130,13 @@ class AuthService {
             key: 'accessToken', value: jsonData['accessToken']);
         await secureStorage.write(
             key: 'refreshToken', value: jsonData['refreshToken']);
+
+        final decodedToken = _decodeJwt(jsonData['accessToken']);
+        await secureStorage.write(
+            key: 'user', value: json.encode(decodedToken));
+
+        bool hasStore = await _checkUserStore();
+        await secureStorage.write(key: 'hasStore', value: hasStore.toString());
       } else if (response.statusCode == 401) {
         throw Exception('Refresh token inválido');
       } else {

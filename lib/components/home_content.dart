@@ -171,7 +171,6 @@ class _HomeContentState extends State<HomeContent> {
       isLoadingEvents = true;
     });
 
-    final token = await authService.getAccessToken();
     final response = await eventService.getEvents(
       page: page,
       limit: limit,

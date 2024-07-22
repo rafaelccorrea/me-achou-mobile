@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:meachou/components/loading/loading_dots.dart';
@@ -8,6 +9,7 @@ import 'package:meachou/screens/login_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:meachou/services/user_service.dart';
+import 'package:meachou/components/delete-confirmation/delete-confirmation.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -30,10 +32,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               children: [
                 Container(
-                  height: MediaQuery.of(context).size.height * 0.4,
+                  height: MediaQuery.of(context).size.height * 0.35,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.blueAccent, Colors.white],
+                      colors: [Colors.blueAccent, Colors.lightBlueAccent],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -45,13 +47,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         const Icon(
                           FontAwesomeIcons.cog,
                           color: Colors.white,
-                          size: 28,
+                          size: 36,
                         ),
                         const SizedBox(width: 10),
                         Text(
                           'Configurações',
                           style: GoogleFonts.lato(
-                            fontSize: 28, // Aumentando o tamanho da fonte
+                            fontSize: 32,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -61,30 +63,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(15.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     children: [
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 20),
                       _buildOption(
                         context,
-                        icon: FontAwesomeIcons.trash,
+                        icon: FontAwesomeIcons.userSlash,
                         title: 'Deletar Conta',
-                        onTap: () async {
+                        onTap: () {
                           if (!_isLoading) {
-                            setState(() {
-                              _isLoading = true;
-                              _loadingOperation = 'delete';
-                            });
-                            await _deleteAccount(context);
-                            setState(() {
-                              _isLoading = false;
-                              _loadingOperation = '';
-                            });
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  title: Text(
+                                    'Confirmar Deleção',
+                                    style: GoogleFonts.lato(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  content: const Text(
+                                      'Tem certeza que deseja deletar sua conta?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      child: const Text(
+                                        'Cancelar',
+                                        style: TextStyle(color: Colors.black87),
+                                      ),
+                                    ),
+                                    ConfirmActionComponent(
+                                      actionTitle: 'Deletar Conta',
+                                      confirmButtonText: 'Confirmar',
+                                      onConfirm: () async {
+                                        Navigator.of(context)
+                                            .pop(); // Fechar o diálogo
+                                        await _deleteAccount(context);
+                                      },
+                                      buttonColor:
+                                          Colors.redAccent.withOpacity(0.7),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           }
                         },
-                        color: Colors.redAccent,
+                        color: Colors.redAccent.withOpacity(0.7),
                         enabled: _loadingOperation != 'delete',
                       ),
+                      const SizedBox(height: 10),
                       _buildOption(
                         context,
                         icon: FontAwesomeIcons.signOutAlt,
@@ -110,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             });
                           }
                         },
-                        color: Colors.blueAccent,
+                        color: Colors.blueAccent.withOpacity(0.7),
                         enabled: _loadingOperation != 'logout',
                       ),
                     ],
@@ -122,10 +154,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (_isLoading)
             BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-              child: Container(
-                color: Colors.black.withOpacity(0.5),
-                child: const Center(
-                  child: LoadingDots(),
+              child: Center(
+                child: Container(
+                  child: const LoadingDots(),
                 ),
               ),
             ),
@@ -145,15 +176,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Card(
       color: Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 4,
+      elevation: 6,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(15),
+        side: BorderSide(color: color.withOpacity(0.3), width: 1.5),
       ),
       child: ListTile(
-        leading: Icon(icon, color: color),
+        leading: Icon(icon, color: color, size: 28),
         title: Text(
           title,
-          style: GoogleFonts.lato(fontSize: 16, color: Colors.black87),
+          style: GoogleFonts.lato(fontSize: 18, color: Colors.black87),
         ),
         onTap: enabled ? onTap : null,
       ),
@@ -161,10 +193,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _deleteAccount(BuildContext context) async {
+    setState(() {
+      _isLoading = true;
+      _loadingOperation = 'delete';
+    });
+
     try {
       UserService userService = UserService();
       final response = await userService.deleteUser();
-
       if (response['statusCode'] == 200) {
         AuthService authService =
             Provider.of<AuthService>(context, listen: false);
@@ -177,20 +213,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
       } else {
         final errorMessage =
             response['body']['message'] ?? 'Failed to delete user';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$errorMessage'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showErrorToast(context, errorMessage);
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$error'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showErrorToast(context, error.toString());
+    } finally {
+      setState(() {
+        _isLoading = false;
+        _loadingOperation = '';
+      });
     }
+  }
+
+  void _showErrorToast(BuildContext context, String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+    );
   }
 }
