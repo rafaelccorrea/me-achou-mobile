@@ -168,22 +168,6 @@ class CustomDrawer extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Divider(color: Colors.grey[300], thickness: 0.5),
-                  ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.grey),
-                    title: const Text(
-                      'Logout',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    onTap: () async {
-                      await authService.logout();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginScreen()),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),

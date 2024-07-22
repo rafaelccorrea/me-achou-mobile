@@ -19,6 +19,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() {
       isLoading = true;
     });
+    FocusScope.of(context).unfocus();
 
     UserService userService = UserService();
 

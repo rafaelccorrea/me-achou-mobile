@@ -22,6 +22,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _signUp() async {
     if (_isLoading) return;
 
+    FocusScope.of(context).unfocus();
+
     String name = _nameController.text.trim();
     String email = _emailController.text.trim();
     String password = _passwordController.text;

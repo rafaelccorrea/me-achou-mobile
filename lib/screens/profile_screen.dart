@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'settings_screen.dart'; // Adicionar a importação da nova tela
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -111,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 20),
                     Card(
-                      color: Colors.white, // Fundo branco para o card
+                      color: Colors.white,
                       margin: const EdgeInsets.symmetric(horizontal: 20),
                       elevation: 4,
                       shape: RoundedRectangleBorder(
@@ -124,19 +125,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           children: [
                             _buildProfileStat(
                               icon: FontAwesomeIcons.star,
-                              value: '6',
+                              value: user!['reviews'].toString(),
                               label: 'Avaliações',
                             ),
                             _buildDivider(),
                             _buildProfileStat(
                               icon: FontAwesomeIcons.thumbsUp,
-                              value: '203',
+                              value: user!['likes'].toString(),
                               label: 'Curtidas',
                             ),
                             _buildDivider(),
                             _buildProfileStat(
                               icon: FontAwesomeIcons.comment,
-                              value: '24',
+                              value: user!['comments'].toString(),
                               label: 'Comentários',
                             ),
                           ],
@@ -144,46 +145,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Card(
-                      color: Colors.white, // Fundo branco para o card
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        leading: const Icon(
-                          FontAwesomeIcons.store,
-                          color: Colors.blueAccent,
+                    if (user!['store'] != null)
+                      Card(
+                        color: Colors.white,
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        title: Text(
-                          'Magalu',
-                          style: GoogleFonts.lato(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                        child: ListTile(
+                          leading: const Icon(
+                            FontAwesomeIcons.store,
+                            color: Colors.blueAccent,
+                          ),
+                          title: Text(
+                            user!['store']['company_name'],
+                            style: GoogleFonts.lato(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                user!['store']['subscription'] != null &&
+                                        user!['store']['subscription']
+                                                ['status'] ==
+                                            'ACTIVE'
+                                    ? FontAwesomeIcons.checkCircle
+                                    : FontAwesomeIcons.timesCircle,
+                                color: user!['store']['subscription'] != null &&
+                                        user!['store']['subscription']
+                                                ['status'] ==
+                                            'ACTIVE'
+                                    ? Colors.green
+                                    : Colors.red,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                user!['store']['subscription'] != null &&
+                                        user!['store']['subscription']
+                                                ['status'] ==
+                                            'ACTIVE'
+                                    ? 'Ativado'
+                                    : 'Inativo',
+                                style: GoogleFonts.lato(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      user!['store']['subscription'] != null &&
+                                              user!['store']['subscription']
+                                                      ['status'] ==
+                                                  'ACTIVE'
+                                          ? Colors.green
+                                          : Colors.red,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              FontAwesomeIcons.checkCircle,
-                              color: Colors.green,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Ativado',
-                              style: GoogleFonts.lato(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -194,14 +217,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   const SizedBox(height: 5),
                   _buildOption(FontAwesomeIcons.bell, 'Notificações'),
-                  _buildOption(FontAwesomeIcons.award, 'Recompensas Microsoft'),
-                  _buildOption(FontAwesomeIcons.users, 'Comunidade'),
-                  _buildOption(FontAwesomeIcons.cog, 'Configurações'),
-                  _buildOption(FontAwesomeIcons.star, 'Interesses'),
                   _buildOption(FontAwesomeIcons.history, 'Histórico'),
-                  _buildOption(FontAwesomeIcons.bookmark, 'Favoritos e Salvos'),
+                  _buildOption(FontAwesomeIcons.cog, 'Configurações', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsScreen(),
+                      ),
+                    );
+                  }),
                   const SizedBox(height: 24),
-                  _buildDeleteAccountButton(),
                 ],
               ),
             ),
@@ -247,46 +272,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildOption(IconData icon, String title) {
+  Widget _buildOption(IconData icon, String title, [VoidCallback? onTap]) {
     return ListTile(
       leading: Icon(icon, color: Colors.blueAccent),
       title: Text(
         title,
         style: GoogleFonts.lato(fontSize: 16, color: Colors.black87),
       ),
-      onTap: () {
-        // Ação de navegação
-      },
-    );
-  }
-
-  Widget _buildDeleteAccountButton() {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        side: const BorderSide(color: Colors.redAccent),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
-      ),
-      onPressed: () {
-        // Lógica para deletar a conta
-      },
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(FontAwesomeIcons.trash, color: Colors.redAccent),
-          const SizedBox(width: 8),
-          Text(
-            'Deletar Conta',
-            style: GoogleFonts.lato(
-              fontSize: 16,
-              color: Colors.redAccent,
-            ),
-          ),
-        ],
-      ),
+      onTap: onTap ?? () {},
     );
   }
 }

@@ -47,6 +47,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    FocusScope.of(context).unfocus();
 
     setState(() {
       isLoading = true;

@@ -35,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
+      FocusScope.of(context).unfocus();
       _showLoading();
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
