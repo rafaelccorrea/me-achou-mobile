@@ -23,10 +23,7 @@ class AuthService {
 
       // Salvar dados do usuário em armazenamento seguro
       final decodedToken = _decodeJwt(jsonData['accessToken']);
-      await secureStorage.write(
-        key: 'user',
-        value: json.encode(decodedToken),
-      );
+      await secureStorage.write(key: 'user', value: json.encode(decodedToken));
 
       bool hasStore = await _checkUserStore();
       await secureStorage.write(key: 'hasStore', value: hasStore.toString());
@@ -54,10 +51,7 @@ class AuthService {
 
       // Salvar dados do usuário em armazenamento seguro
       final decodedToken = _decodeJwt(jsonData['accessToken']);
-      await secureStorage.write(
-        key: 'user',
-        value: json.encode(decodedToken),
-      );
+      await secureStorage.write(key: 'user', value: json.encode(decodedToken));
 
       bool hasStore = await _checkUserStore();
       await secureStorage.write(key: 'hasStore', value: hasStore.toString());
@@ -113,6 +107,42 @@ class AuthService {
     await secureStorage.delete(key: 'refreshToken');
     await secureStorage.delete(key: 'user');
     await secureStorage.delete(key: 'hasStore');
+  }
+
+  Future<void> refreshToken() async {
+    final refreshToken = await getRefreshToken();
+    final userId = (await getUser())?['id'];
+
+    print('Response refreshToken: ${refreshToken}');
+    print('Response userId: ${userId}');
+
+    if (refreshToken != null && userId != null) {
+      final response = await http.post(
+        Uri.parse(ApiConstants.refreshTokenEndpoint),
+        body: json.encode({
+          'userId': userId,
+          'refreshToken': refreshToken,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+
+        // Atualizar tokens em armazenamento seguro
+        await secureStorage.write(
+            key: 'accessToken', value: jsonData['accessToken']);
+        await secureStorage.write(
+            key: 'refreshToken', value: jsonData['refreshToken']);
+      } else if (response.statusCode == 401) {
+        throw Exception('Refresh token inválido');
+      } else {
+        throw Exception('Falha ao atualizar token');
+      }
+    } else {
+      throw Exception('Refresh token ou userId ausente');
+    }
   }
 
   Map<String, dynamic> _decodeJwt(String token) {

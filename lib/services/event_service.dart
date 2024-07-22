@@ -1,12 +1,9 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meachou/constants/api_constants.dart';
-import 'package:meachou/services/auth_service.dart';
+import 'package:meachou/services/api_client.dart';
+import 'package:http/http.dart' as http;
 
 class EventService {
-  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
-  final AuthService authService = AuthService();
+  final ApiClient apiClient = ApiClient();
 
   Future<http.Response> getEvents({
     required int page,
@@ -17,8 +14,6 @@ class EventService {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
-    final String? token = await authService.getAccessToken();
-
     final Map<String, String> queryParams = {
       'page': page.toString(),
       'limit': limit.toString(),
@@ -32,12 +27,6 @@ class EventService {
     final uri = Uri.parse(
         '${ApiConstants.eventsEndpoint}?${Uri(queryParameters: queryParams).query}');
 
-    return await http.get(
-      uri,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token',
-      },
-    );
+    return await apiClient.get(uri.toString());
   }
 }

@@ -1,13 +1,10 @@
+import 'package:meachou/constants/api_constants.dart';
+import 'package:meachou/services/api_client.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:meachou/constants/api_constants.dart';
-import 'package:meachou/services/auth_service.dart';
 
 class StoreService {
-  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
-  final AuthService authService = AuthService();
+  final ApiClient apiClient = ApiClient();
 
   Future<http.Response> getStores({
     required int page,
@@ -24,8 +21,6 @@ class StoreService {
     int? rankingMin,
     int? rankingMax,
   }) async {
-    final String? token = await authService.getAccessToken();
-
     final Map<String, String> queryParams = {
       'page': page.toString(),
       'limit': limit.toString(),
@@ -47,26 +42,12 @@ class StoreService {
     final uri = Uri.parse(
         '${ApiConstants.getStoresEndpoint}?${Uri(queryParameters: queryParams).query}');
 
-    return await http.get(
-      uri,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token',
-      },
-    );
+    return await apiClient.get(uri.toString());
   }
 
   Future<Map<String, dynamic>?> getStoreDetails() async {
-    final String? token = await authService.getAccessToken();
     final uri = Uri.parse(ApiConstants.storeDetailsEndpoint);
-
-    final response = await http.get(
-      uri,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token',
-      },
-    );
+    final response = await apiClient.get(uri.toString());
 
     if (response.statusCode == 200) {
       return json.decode(response.body);
