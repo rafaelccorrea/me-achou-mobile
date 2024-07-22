@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:meachou/constants/api_constants.dart';
 import 'package:meachou/services/auth_service.dart';
 
 class ApiClient {

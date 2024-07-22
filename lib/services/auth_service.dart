@@ -127,7 +127,7 @@ class AuthService {
       );
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         final jsonData = json.decode(response.body);
 
         // Atualizar tokens em armazenamento seguro
