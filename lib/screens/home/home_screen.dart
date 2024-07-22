@@ -77,8 +77,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         if (snapshot.hasError || snapshot.data == null) {
-          authService.logout();
-
           WidgetsBinding.instance?.addPostFrameCallback((_) {
             Navigator.pushReplacement(
               context,

@@ -22,36 +22,55 @@ class StoreList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Lojas cadastradas',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: stores.length,
-          itemBuilder: (context, index) {
-            final store = stores[index];
-            final isOwnStore = store['id'] == userStoreId;
-            return Stack(
+        if (stores.isNotEmpty)
+          const Text(
+            'Lojas cadastradas',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+        if (stores.isNotEmpty) const SizedBox(height: 10),
+        if (stores.isEmpty)
+          Center(
+            child: Column(
               children: [
-                StoreCard(
-                  store: store,
-                  isOwnStore: isOwnStore,
-                  followStore: followStore,
-                  unfollowStore: unfollowStore,
-                  confettiControllers: confettiControllers,
+                const Text(
+                  'Nenhuma loja encontrada',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
-                Positioned(
-                  right: 16,
-                  top: 16,
-                  child: _buildConfettiWidget(store['id']),
+                const SizedBox(height: 20),
+                Image.asset(
+                  'assets/no_stores.png',
+                  width: 200,
+                  height: 200,
                 ),
               ],
-            );
-          },
-        ),
+            ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: stores.length,
+            itemBuilder: (context, index) {
+              final store = stores[index];
+              final isOwnStore = store['id'] == userStoreId;
+              return Stack(
+                children: [
+                  StoreCard(
+                    store: store,
+                    isOwnStore: isOwnStore,
+                    followStore: followStore,
+                    unfollowStore: unfollowStore,
+                    confettiControllers: confettiControllers,
+                  ),
+                  Positioned(
+                    right: 16,
+                    top: 16,
+                    child: _buildConfettiWidget(store['id']),
+                  ),
+                ],
+              );
+            },
+          ),
       ],
     );
   }
