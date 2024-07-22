@@ -7,17 +7,32 @@ import 'package:meachou/services/auth_service.dart';
 class ApiClient {
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
   final AuthService authService = AuthService();
+  int _failureCount = 0;
 
   Future<http.Response> sendRequest(
       Future<http.Response> Function() request) async {
     final response = await request();
 
     if (response.statusCode == 401) {
+      _failureCount++;
+      if (_failureCount >= 3) {
+        await authService.logout();
+        _failureCount = 0;
+        throw Exception(
+            'Usuário deslogado devido a falhas consecutivas de autenticação.');
+      }
+
       print("Token expirado, tentando atualizar o token...");
       await authService.refreshToken();
       final retryResponse = await request();
+
+      if (retryResponse.statusCode != 401) {
+        _failureCount = 0;
+      }
+
       return retryResponse;
     } else {
+      _failureCount = 0;
       return response;
     }
   }
