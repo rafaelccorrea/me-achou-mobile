@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:meachou/services/follow_store.dart';
 import 'package:meachou/components/loading/loading_dots.dart';
-import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class FollowersScreen extends StatefulWidget {
   @override
@@ -17,6 +14,8 @@ class _FollowersScreenState extends State<FollowersScreen> {
   List<Map<String, dynamic>>? followersStores;
   bool isLoadingFollowing = true;
   bool isLoadingFollowers = true;
+  int totalFollowing = 0;
+  int totalFollowers = 0;
   int currentIndex = 1;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
@@ -29,10 +28,11 @@ class _FollowersScreenState extends State<FollowersScreen> {
 
   Future<void> _fetchFollowedStores() async {
     try {
-      final stores = await followService.getFollowedStores(1, 10);
+      final response = await followService.getFollowedStores(1, 10);
       if (mounted) {
         setState(() {
-          followingStores = stores;
+          followingStores = List<Map<String, dynamic>>.from(response['data']);
+          totalFollowing = response['total'];
           isLoadingFollowing = false;
         });
       }
@@ -48,10 +48,11 @@ class _FollowersScreenState extends State<FollowersScreen> {
 
   Future<void> _fetchFollowersStores() async {
     try {
-      // final stores = await followService.getFollowersStores(1, 10); // Supondo que essa função exista
+      // final response = await followService.getFollowersStores(1, 10); // Supondo que essa função exista
       if (mounted) {
         setState(() {
-          // followersStores = stores;
+          // followersStores = List<Map<String, dynamic>>.from(response['data']);
+          // totalFollowers = response['total'];
           isLoadingFollowers = false;
         });
       }
@@ -68,6 +69,9 @@ class _FollowersScreenState extends State<FollowersScreen> {
   Future<void> _unfollowStore(String storeId, int index) async {
     final removedStore = followingStores?.removeAt(index);
     if (removedStore != null) {
+      setState(() {
+        totalFollowing--;
+      });
       _listKey.currentState?.removeItem(
         index,
         (context, animation) => _buildStoreTile(removedStore, index, animation),
@@ -80,6 +84,9 @@ class _FollowersScreenState extends State<FollowersScreen> {
       print('Falha ao deixar de seguir a loja: $e');
       if (mounted && removedStore != null) {
         followingStores?.insert(index, removedStore);
+        setState(() {
+          totalFollowing++;
+        });
         _listKey.currentState?.insertItem(index);
       }
     }
@@ -93,13 +100,10 @@ class _FollowersScreenState extends State<FollowersScreen> {
         contentPadding: const EdgeInsets.symmetric(vertical: 5.0),
         leading: Container(
           padding: const EdgeInsets.all(3.0),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              colors: [
-                Colors.blueAccent,
-                Color(0xFF2196F3)
-              ], // Dois tons de azul
+            gradient: LinearGradient(
+              colors: [Colors.blueAccent, Color(0xFF2196F3)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -140,8 +144,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
             _unfollowStore(store['id'], index);
           },
           style: TextButton.styleFrom(
-            backgroundColor:
-                Colors.black.withOpacity(0.05), // Mais transparente
+            backgroundColor: Colors.black.withOpacity(0.05),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -201,7 +204,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
     if (isLoadingFollowing || isLoadingFollowers) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(),
+          child: LoadingDots(),
         ),
       );
     }
@@ -213,7 +216,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blueAccent, Colors.white], // Azul e branco
+                colors: [Colors.blueAccent, Colors.white],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -245,7 +248,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                             child: Column(
                               children: [
                                 Text(
-                                  '${followingStores?.length ?? 0}',
+                                  '$totalFollowing',
                                   style: GoogleFonts.lato(
                                     textStyle: const TextStyle(
                                       color: Colors.black,
@@ -280,7 +283,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                             child: Column(
                               children: [
                                 Text(
-                                  '${followersStores?.length ?? 0}',
+                                  '$totalFollowers',
                                   style: GoogleFonts.lato(
                                     textStyle: const TextStyle(
                                       color: Colors.black,

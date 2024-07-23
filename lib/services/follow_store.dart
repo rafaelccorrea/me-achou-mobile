@@ -8,15 +8,17 @@ class FollowsService {
   final ApiClient apiClient = ApiClient();
   final AuthService authService = AuthService();
 
-  Future<List<Map<String, dynamic>>?> getFollowedStores(
-      int page, int limit) async {
+  Future<Map<String, dynamic>> getFollowedStores(int page, int limit) async {
     final uri =
         Uri.parse('${ApiConstants.getFollowsEndpoint}?page=$page&limit=$limit');
     final response = await apiClient.get(uri.toString());
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      return List<Map<String, dynamic>>.from(data['data']);
+      return {
+        'total': data['total'],
+        'data': List<Map<String, dynamic>>.from(data['data']),
+      };
     } else {
       throw Exception('Failed to load followed stores');
     }
