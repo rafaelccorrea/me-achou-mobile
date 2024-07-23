@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:meachou/components/home/event_carousel.dart';
 import 'package:meachou/components/home/loading_skeletons.dart';
 import 'package:meachou/components/home/store_list.dart';
 import 'package:meachou/components/loading/loading_dots.dart';
-import 'package:meachou/constants/api_constants.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:meachou/services/follow_store.dart';
 import 'package:meachou/services/stores_service.dart';
 import 'package:meachou/services/event_service.dart';
+import 'package:async/async.dart';
 
 class HomeContent extends StatefulWidget {
   final Map<String, dynamic>? filters;
@@ -39,10 +38,14 @@ class _HomeContentState extends State<HomeContent> {
   int currentPage = 1;
   final ScrollController _scrollController = ScrollController();
 
+  CancelableOperation<void>? _fetchUserStoreIdOperation;
+  CancelableOperation<void>? _fetchStoresOperation;
+
   @override
   void initState() {
     super.initState();
-    fetchUserStoreId();
+    _fetchUserStoreIdOperation =
+        CancelableOperation.fromFuture(fetchUserStoreId());
     applyFilters(widget.filters);
     _scrollController.addListener(() {
       if (_scrollController.position.atEdge) {
@@ -59,6 +62,8 @@ class _HomeContentState extends State<HomeContent> {
   void dispose() {
     _confettiControllers.forEach((key, controller) => controller.dispose());
     _scrollController.dispose();
+    _fetchUserStoreIdOperation?.cancel();
+    _fetchStoresOperation?.cancel();
     super.dispose();
   }
 
@@ -92,7 +97,8 @@ class _HomeContentState extends State<HomeContent> {
         currentCity = city ?? 'Marília';
       });
     }
-    fetchStores(filters: _currentFilters);
+    _fetchStoresOperation =
+        CancelableOperation.fromFuture(fetchStores(filters: _currentFilters));
     fetchEvents(filters: _currentFilters, page: 1, limit: 10);
   }
 

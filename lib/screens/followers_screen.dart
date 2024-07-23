@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:convert';
 import 'package:meachou/services/follow_store.dart';
 import 'package:meachou/components/loading/loading_dots.dart';
 
@@ -17,39 +15,14 @@ class _FollowersScreenState extends State<FollowersScreen>
   List<Map<String, dynamic>>? followersStores;
   bool isLoadingFollowing = true;
   bool isLoadingFollowers = true;
-  String? userName;
-  int currentIndex = 0;
+  int currentIndex = 1;
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   @override
   void initState() {
     super.initState();
-    _fetchUserDetails();
     _fetchFollowedStores();
     _fetchFollowersStores();
-  }
-
-  Future<void> _fetchUserDetails() async {
-    const secureStorage = FlutterSecureStorage();
-    try {
-      final userJson = await secureStorage.read(key: 'user');
-      if (userJson != null) {
-        final userDetails = jsonDecode(userJson) as Map<String, dynamic>;
-        if (mounted) {
-          setState(() {
-            userName = userDetails['name'];
-          });
-        }
-      } else {
-        throw Exception(
-            'Nenhum dado do usuário encontrado no armazenamento seguro');
-      }
-    } catch (error) {
-      if (mounted) {
-        setState(() {
-          userName = 'Usuário';
-        });
-      }
-    }
   }
 
   Future<void> _fetchFollowedStores() async {
@@ -72,7 +45,6 @@ class _FollowersScreenState extends State<FollowersScreen>
   }
 
   Future<void> _fetchFollowersStores() async {
-    // Nova função para carregar seguidores
     try {
       // final stores = await followService.getFollowersStores(1, 10); // Supondo que essa função exista
       if (mounted) {
@@ -91,30 +63,80 @@ class _FollowersScreenState extends State<FollowersScreen>
     }
   }
 
-  Future<void> _unfollowStore(String storeId) async {
-    if (mounted) {
-      setState(() {
-        followingStores =
-            followingStores?.where((store) => store['id'] != storeId).toList();
-      });
+  Future<void> _unfollowStore(String storeId, int index) async {
+    final removedStore = followingStores?.removeAt(index);
+    if (removedStore != null) {
+      _listKey.currentState?.removeItem(
+        index,
+        (context, animation) => _buildStoreTile(removedStore, index, animation),
+      );
     }
 
     try {
       await followService.unfollowStore(storeId);
     } catch (e) {
       print('Failed to unfollow store: $e');
-      if (mounted) {
-        setState(() {
-          followingStores = followingStores?.map((store) {
-            if (store['id'] == storeId) {
-              store['isFollowing'] =
-                  true; // Reverte a interface caso ocorra um erro
-            }
-            return store;
-          }).toList();
-        });
+      if (mounted && removedStore != null) {
+        followingStores?.insert(index, removedStore);
+        _listKey.currentState?.insertItem(index);
       }
     }
+  }
+
+  Widget _buildStoreTile(Map<String, dynamic> store, int index,
+      [Animation<double>? animation]) {
+    return SizeTransition(
+      sizeFactor: animation ?? AlwaysStoppedAnimation(1),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
+        leading: CircleAvatar(
+          radius: 25,
+          backgroundImage: store['profile_picture'] != null
+              ? NetworkImage(store['profile_picture'])
+              : const AssetImage('assets/default_avatar.png') as ImageProvider,
+        ),
+        title: Text(
+          store['company_name'],
+          style: GoogleFonts.lato(
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ),
+        subtitle: Text(
+          store['description'] ?? '',
+          style: GoogleFonts.lato(
+            textStyle: const TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+        trailing: ElevatedButton(
+          onPressed: () {
+            _unfollowStore(store['id'], index);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.black,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Text(
+            'Remover',
+            style: GoogleFonts.lato(
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildStoreList(List<Map<String, dynamic>>? stores, bool isLoading) {
@@ -127,60 +149,12 @@ class _FollowersScreenState extends State<FollowersScreen>
                   style: TextStyle(color: Colors.red, fontSize: 16),
                 ),
               )
-            : ListView.builder(
-                itemCount: stores.length,
-                itemBuilder: (context, index) {
+            : AnimatedList(
+                key: _listKey,
+                initialItemCount: stores.length,
+                itemBuilder: (context, index, animation) {
                   final store = stores[index];
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
-                    leading: CircleAvatar(
-                      radius: 25,
-                      backgroundImage: store['profile_picture'] != null
-                          ? NetworkImage(store['profile_picture'])
-                          : const AssetImage('assets/default_avatar.png')
-                              as ImageProvider,
-                    ),
-                    title: Text(
-                      store['company_name'],
-                      style: GoogleFonts.lato(
-                        textStyle: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    subtitle: Text(
-                      store['description'] ?? '',
-                      style: GoogleFonts.lato(
-                        textStyle: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                    trailing: ElevatedButton(
-                      onPressed: () {
-                        _unfollowStore(store['id']);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[800],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        'Remover',
-                        style: GoogleFonts.lato(
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
+                  return _buildStoreTile(store, index, animation);
                 },
               );
   }
@@ -192,7 +166,7 @@ class _FollowersScreenState extends State<FollowersScreen>
       height: 4.0,
       width: isActive ? 24.0 : 0.0,
       decoration: BoxDecoration(
-        color: isActive ? Colors.white : Colors.transparent,
+        color: isActive ? Colors.black : Colors.transparent,
         borderRadius: BorderRadius.circular(2.0),
       ),
     );
@@ -201,34 +175,12 @@ class _FollowersScreenState extends State<FollowersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 1,
-        title: Row(
-          children: [
-            const CircleAvatar(
-              radius: 20,
-              backgroundImage: AssetImage('assets/default_avatar.png'),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              userName ?? 'Usuário',
-              style: GoogleFonts.lato(
-                textStyle: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
       body: Container(
-        color: Colors.black,
+        color: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           children: [
+            const SizedBox(height: 50),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Row(
@@ -248,8 +200,8 @@ class _FollowersScreenState extends State<FollowersScreen>
                           '417',
                           style: GoogleFonts.lato(
                             textStyle: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
+                                color: Colors.black,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -257,9 +209,10 @@ class _FollowersScreenState extends State<FollowersScreen>
                           'seguindo',
                           style: GoogleFonts.lato(
                             textStyle: const TextStyle(
-                                color: Colors.grey, fontSize: 14),
+                                color: Colors.black, fontSize: 16),
                           ),
                         ),
+                        const SizedBox(height: 8),
                         _buildIndicator(currentIndex == 1),
                       ],
                     ),
@@ -278,8 +231,8 @@ class _FollowersScreenState extends State<FollowersScreen>
                           '211',
                           style: GoogleFonts.lato(
                             textStyle: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
+                                color: Colors.black,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -287,26 +240,13 @@ class _FollowersScreenState extends State<FollowersScreen>
                           'seguidores',
                           style: GoogleFonts.lato(
                             textStyle: const TextStyle(
-                                color: Colors.grey, fontSize: 14),
+                                color: Colors.black, fontSize: 16),
                           ),
                         ),
+                        const SizedBox(height: 8),
                         _buildIndicator(currentIndex == 0),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              height: 1.0,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
