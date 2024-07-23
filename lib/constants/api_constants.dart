@@ -22,4 +22,5 @@ class ApiConstants {
   static String get userDeleteEndpoint => '$baseUrl/users/delete';
   static String get refreshTokenEndpoint => '$baseUrl/auth/refresh-token';
   static String get getFollowsEndpoint => '$baseUrl/follow-store';
+  static String get getFollowersEndpoint => '$baseUrl/follow-store/followers';
 }

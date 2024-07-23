@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:meachou/screens/followers_screen.dart';
+import 'package:meachou/screens/follow/followers_screen.dart';
 import 'package:meachou/screens/login_screen.dart';
 import 'package:meachou/screens/profile_screen.dart';
 import 'package:provider/provider.dart';

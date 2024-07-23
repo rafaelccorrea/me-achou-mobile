@@ -8,9 +8,24 @@ class FollowsService {
   final ApiClient apiClient = ApiClient();
   final AuthService authService = AuthService();
 
-  Future<Map<String, dynamic>> getFollowedStores(int page, int limit) async {
-    final uri =
-        Uri.parse('${ApiConstants.getFollowsEndpoint}?page=$page&limit=$limit');
+  Future<Map<String, dynamic>> getFollowingStores({
+    String? companyName,
+    int? rankingMin,
+    int? rankingMax,
+    required int page,
+    required int limit,
+  }) async {
+    final queryParameters = {
+      'page': page.toString(),
+      'limit': limit.toString(),
+      if (companyName != null) 'company_name': companyName,
+      if (rankingMin != null) 'ranking_min': rankingMin.toString(),
+      if (rankingMax != null) 'ranking_max': rankingMax.toString(),
+    };
+
+    final uri = Uri.parse(ApiConstants.getFollowsEndpoint)
+        .replace(queryParameters: queryParameters);
+
     final response = await apiClient.get(uri.toString());
 
     if (response.statusCode == 200) {
@@ -21,6 +36,38 @@ class FollowsService {
       };
     } else {
       throw Exception('Failed to load followed stores');
+    }
+  }
+
+  Future<Map<String, dynamic>> getFollowersStores({
+    required int page,
+    required int limit,
+    String? name,
+  }) async {
+    final token = await authService.getAccessToken();
+    final uri =
+        Uri.parse(ApiConstants.getFollowersEndpoint).replace(queryParameters: {
+      'page': page.toString(),
+      'limit': limit.toString(),
+      if (name != null) 'user_name': name,
+    });
+
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return {
+        'total': data['total'],
+        'data': List<Map<String, dynamic>>.from(data['data']),
+      };
+    } else {
+      throw Exception('Failed to load followers stores');
     }
   }
 

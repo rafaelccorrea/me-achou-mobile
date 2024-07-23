@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meachou/components/placeholder_widget.dart';
 import 'package:meachou/providers/app_drawer_provider.dart';
-import 'package:meachou/screens/followers_screen.dart';
+import 'package:meachou/screens/follow/followers_screen.dart';
 import 'package:meachou/widgets/custom_drawer.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/components/custom_app_bar.dart';
