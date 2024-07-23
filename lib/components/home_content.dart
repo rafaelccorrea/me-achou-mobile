@@ -9,6 +9,7 @@ import 'package:meachou/components/home/store_list.dart';
 import 'package:meachou/components/loading/loading_dots.dart';
 import 'package:meachou/constants/api_constants.dart';
 import 'package:meachou/services/auth_service.dart';
+import 'package:meachou/services/follow_store.dart';
 import 'package:meachou/services/stores_service.dart';
 import 'package:meachou/services/event_service.dart';
 
@@ -32,6 +33,7 @@ class _HomeContentState extends State<HomeContent> {
   final AuthService authService = AuthService();
   final StoreService storeService = StoreService();
   final EventService eventService = EventService();
+  final FollowsService followsService = FollowsService();
   final Map<String, ConfettiController> _confettiControllers = {};
   Map<String, dynamic> _currentFilters = {};
   int currentPage = 1;
@@ -61,104 +63,130 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Future<void> fetchUserStoreId() async {
-    final token = await authService.getAccessToken();
-    final response = await http.get(
-      Uri.parse(ApiConstants.storeDetailsEndpoint),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
+    try {
+      final response = await storeService
+          .getStoreDetails()
+          .timeout(const Duration(seconds: 10));
 
-    if (response.statusCode == 200) {
-      setState(() {
-        userStoreId = json.decode(response.body)['id'];
-      });
-    } else {
-      return;
+      if (response is Map<String, dynamic> && response.containsKey('id')) {
+        if (mounted) {
+          setState(() {
+            userStoreId = response['id'];
+          });
+        }
+      } else {
+        throw Exception('Failed to load user store ID');
+      }
+    } catch (e) {
+      _showErrorToast('Erro ao carregar ID da loja do usuário.');
     }
   }
 
   Future<void> applyFilters(Map<String, dynamic>? filters) async {
-    setState(() {
-      _currentFilters = filters ?? {};
-    });
-    String? city = _currentFilters['city'];
-    setState(() {
-      currentCity = city ?? 'Marília';
-    });
+    if (mounted) {
+      setState(() {
+        _currentFilters = filters ?? {};
+      });
+      String? city = _currentFilters['city'];
+      setState(() {
+        currentCity = city ?? 'Marília';
+      });
+    }
     fetchStores(filters: _currentFilters);
     fetchEvents(filters: _currentFilters, page: 1, limit: 10);
   }
 
   Future<void> fetchStores({Map<String, dynamic>? filters}) async {
-    setState(() {
-      isLoadingStores = true;
-      currentPage = 1;
-    });
-
-    final token = await authService.getAccessToken();
-    final response = await storeService.getStores(
-      page: 1,
-      limit: 10,
-      businessSector: filters?['business_sector'] ?? '',
-      city: currentCity,
-      region: filters?['region'],
-      rankingMin: filters?['ranking_min'],
-      rankingMax: filters?['ranking_max'],
-      delivery: filters?['delivery'] == false ? null : filters?['delivery'],
-      inHomeService: filters?['in_home_service'] == false
-          ? null
-          : filters?['in_home_service'],
-    );
-
-    if (response.statusCode == 200) {
+    if (mounted) {
       setState(() {
-        stores = json.decode(response.body)['data'];
-        isLoadingStores = false;
-        _initializeConfettiControllers();
+        isLoadingStores = true;
+        currentPage = 1;
       });
-    } else {
-      setState(() {
-        isLoadingStores = false;
-      });
+    }
+
+    try {
+      final response = await storeService
+          .getStores(
+            page: 1,
+            limit: 10,
+            businessSector: filters?['business_sector'] ?? '',
+            city: currentCity,
+            region: filters?['region'],
+            rankingMin: filters?['ranking_min'],
+            rankingMax: filters?['ranking_max'],
+            delivery:
+                filters?['delivery'] == false ? null : filters?['delivery'],
+            inHomeService: filters?['in_home_service'] == false
+                ? null
+                : filters?['in_home_service'],
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response?.statusCode == 200) {
+        if (mounted) {
+          setState(() {
+            stores = json.decode(response!.body)['data'];
+            isLoadingStores = false;
+            _initializeConfettiControllers();
+          });
+        }
+      } else {
+        throw Exception('Failed to load stores');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoadingStores = false;
+        });
+      }
       _showErrorToast('Erro ao carregar as lojas.');
     }
   }
 
   Future<void> loadMoreStores() async {
-    setState(() {
-      isLoadingMoreStores = true;
-    });
-
-    final token = await authService.getAccessToken();
-    final response = await storeService.getStores(
-      page: currentPage + 1,
-      limit: 10,
-      businessSector: _currentFilters['business_sector'] ?? '',
-      city: currentCity,
-      region: _currentFilters['region'],
-      rankingMin: _currentFilters['ranking_min'],
-      rankingMax: _currentFilters['ranking_max'],
-      delivery: _currentFilters['delivery'] == false
-          ? null
-          : _currentFilters['delivery'],
-      inHomeService: _currentFilters['in_home_service'] == false
-          ? null
-          : _currentFilters['in_home_service'],
-    );
-
-    if (response.statusCode == 200) {
-      final newStores = json.decode(response.body)['data'];
+    if (mounted) {
       setState(() {
-        stores.addAll(newStores);
-        currentPage += 1;
-        isLoadingMoreStores = false;
+        isLoadingMoreStores = true;
       });
-    } else {
-      setState(() {
-        isLoadingMoreStores = false;
-      });
+    }
+
+    try {
+      final response = await storeService
+          .getStores(
+            page: currentPage + 1,
+            limit: 10,
+            businessSector: _currentFilters['business_sector'] ?? '',
+            city: currentCity,
+            region: _currentFilters['region'],
+            rankingMin: _currentFilters['ranking_min'],
+            rankingMax: _currentFilters['ranking_max'],
+            delivery: _currentFilters['delivery'] == false
+                ? null
+                : _currentFilters['delivery'],
+            inHomeService: _currentFilters['in_home_service'] == false
+                ? null
+                : _currentFilters['in_home_service'],
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response?.statusCode == 200) {
+        final newStores = json.decode(response!.body)['data'];
+        if (mounted) {
+          setState(() {
+            stores.addAll(newStores);
+            currentPage += 1;
+            isLoadingMoreStores = false;
+          });
+        }
+      } else {
+        throw Exception('Failed to load more stores');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoadingMoreStores = false;
+        });
+      }
       _showErrorToast('Erro ao carregar mais lojas.');
     }
   }
@@ -167,25 +195,37 @@ class _HomeContentState extends State<HomeContent> {
       {Map<String, dynamic>? filters,
       required int page,
       required int limit}) async {
-    setState(() {
-      isLoadingEvents = true;
-    });
-
-    final response = await eventService.getEvents(
-      page: page,
-      limit: limit,
-      city: currentCity,
-    );
-
-    if (response.statusCode == 200) {
+    if (mounted) {
       setState(() {
-        events = json.decode(response.body)['data'];
-        isLoadingEvents = false;
+        isLoadingEvents = true;
       });
-    } else {
-      setState(() {
-        isLoadingEvents = false;
-      });
+    }
+
+    try {
+      final response = await eventService
+          .getEvents(
+            page: page,
+            limit: limit,
+            city: currentCity,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response?.statusCode == 200) {
+        if (mounted) {
+          setState(() {
+            events = json.decode(response!.body)['data'];
+            isLoadingEvents = false;
+          });
+        }
+      } else {
+        throw Exception('Failed to load events');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoadingEvents = false;
+        });
+      }
     }
   }
 
@@ -199,24 +239,16 @@ class _HomeContentState extends State<HomeContent> {
   Future<void> followStore(String storeId) async {
     if (_isOwnStore(storeId)) return;
 
-    final token = await authService.getAccessToken();
-    final endpoint =
-        ApiConstants.followStoreEndpoint.replaceFirst(':storeId', storeId);
-
+    // Atualiza o estado instantaneamente
     setState(() {
       _updateStoreFollowStatus(storeId, true);
       _confettiControllers[storeId]?.play();
     });
 
-    final response = await http.post(
-      Uri.parse(endpoint),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode != 201) {
+    try {
+      await followsService.followStore(storeId);
+    } catch (e) {
+      // Reverte o estado se a API falhar
       setState(() {
         _updateStoreFollowStatus(storeId, false);
       });
@@ -227,23 +259,15 @@ class _HomeContentState extends State<HomeContent> {
   Future<void> unfollowStore(String storeId) async {
     if (_isOwnStore(storeId)) return;
 
-    final token = await authService.getAccessToken();
-    final endpoint =
-        ApiConstants.unfollowStoreEndpoint.replaceFirst(':storeId', storeId);
-
+    // Atualiza o estado instantaneamente
     setState(() {
       _updateStoreFollowStatus(storeId, false);
     });
 
-    final response = await http.delete(
-      Uri.parse(endpoint),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode != 200) {
+    try {
+      await followsService.unfollowStore(storeId);
+    } catch (e) {
+      // Reverte o estado se a API falhar
       setState(() {
         _updateStoreFollowStatus(storeId, true);
       });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:meachou/screens/forgot_password_screen.dart';
 import 'package:meachou/screens/home/home_screen.dart';
 import 'package:meachou/screens/login_screen.dart';
+import 'package:meachou/screens/notifications_screen.dart';
 import 'package:meachou/screens/profile_screen.dart';
 import 'package:meachou/screens/signup_screen.dart';
 import 'package:provider/provider.dart';
@@ -31,7 +32,8 @@ class MeAchou extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/forgot_password': (context) => const ForgotPasswordScreen(),
         '/signup': (context) => const SignUpScreen(),
-        '/profile_screen': (context) => const ProfileScreen()
+        '/profile_screen': (context) => const ProfileScreen(),
+        '/notifications_screen': (context) => const NotificationsScreen(),
       },
     );
   }

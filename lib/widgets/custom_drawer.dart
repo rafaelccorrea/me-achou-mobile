@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meachou/screens/followers_screen.dart';
 import 'package:meachou/screens/login_screen.dart';
 import 'package:meachou/screens/profile_screen.dart';
 import 'package:provider/provider.dart';
@@ -104,6 +105,11 @@ class CustomDrawer extends StatelessWidget {
                             context,
                             icon: Icons.group,
                             text: 'Seguindo',
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => FollowersScreen(),
+                              ));
+                            },
                           ),
                           if (hasStore)
                             _buildExpansionTileWithoutBorder(

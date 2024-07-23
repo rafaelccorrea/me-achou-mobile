@@ -3,7 +3,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'settings_screen.dart'; // Adicionar a importação da nova tela
+import 'settings_screen.dart';
+import 'notifications_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -216,7 +217,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 5),
-                  _buildOption(FontAwesomeIcons.bell, 'Notificações'),
+                  _buildOption(
+                    FontAwesomeIcons.bell,
+                    'Notificações',
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsScreen(),
+                        ),
+                      );
+                    },
+                  ),
                   _buildOption(FontAwesomeIcons.history, 'Histórico'),
                   _buildOption(FontAwesomeIcons.cog, 'Configurações', () {
                     Navigator.push(

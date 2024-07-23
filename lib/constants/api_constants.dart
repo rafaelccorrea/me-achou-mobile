@@ -1,5 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 class ApiConstants {
   static String get baseUrl {
     // final url = dotenv.env['API_BASE_URL'];
@@ -23,4 +21,5 @@ class ApiConstants {
   static String get userDetailsEndpoint => '$baseUrl/users';
   static String get userDeleteEndpoint => '$baseUrl/users/delete';
   static String get refreshTokenEndpoint => '$baseUrl/auth/refresh-token';
+  static String get getFollowsEndpoint => '$baseUrl/follow-store';
 }

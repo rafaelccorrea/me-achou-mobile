@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meachou/components/placeholder_widget.dart';
 import 'package:meachou/providers/app_drawer_provider.dart';
+import 'package:meachou/screens/followers_screen.dart';
 import 'package:meachou/widgets/custom_drawer.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/components/custom_app_bar.dart';
@@ -22,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _pages = [
     HomeContent(),
     PlaceholderWidget('Publicações'),
-    PlaceholderWidget('Seguindo'),
+    FollowersScreen(),
     PlaceholderWidget('Avaliações'),
   ];
 
@@ -36,6 +37,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onItemTapped(int index) {
     if (index == 4) {
       _scaffoldKey.currentState?.openDrawer();
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => FollowersScreen()),
+      );
     } else {
       setState(() {
         _selectedIndex = index;
