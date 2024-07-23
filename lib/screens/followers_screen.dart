@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:meachou/services/follow_store.dart';
 import 'package:meachou/components/loading/loading_dots.dart';
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class FollowersScreen extends StatefulWidget {
   @override
   _FollowersScreenState createState() => _FollowersScreenState();
 }
 
-class _FollowersScreenState extends State<FollowersScreen>
-    with SingleTickerProviderStateMixin {
+class _FollowersScreenState extends State<FollowersScreen> {
   final FollowsService followService = FollowsService();
   List<Map<String, dynamic>>? followingStores;
   List<Map<String, dynamic>>? followersStores;
@@ -35,7 +37,7 @@ class _FollowersScreenState extends State<FollowersScreen>
         });
       }
     } catch (e) {
-      print('Failed to load followed stores: $e');
+      print('Falha ao carregar as lojas seguidas: $e');
       if (mounted) {
         setState(() {
           isLoadingFollowing = false;
@@ -54,7 +56,7 @@ class _FollowersScreenState extends State<FollowersScreen>
         });
       }
     } catch (e) {
-      print('Failed to load followers stores: $e');
+      print('Falha ao carregar as lojas seguidoras: $e');
       if (mounted) {
         setState(() {
           isLoadingFollowers = false;
@@ -75,7 +77,7 @@ class _FollowersScreenState extends State<FollowersScreen>
     try {
       await followService.unfollowStore(storeId);
     } catch (e) {
-      print('Failed to unfollow store: $e');
+      print('Falha ao deixar de seguir a loja: $e');
       if (mounted && removedStore != null) {
         followingStores?.insert(index, removedStore);
         _listKey.currentState?.insertItem(index);
@@ -86,14 +88,33 @@ class _FollowersScreenState extends State<FollowersScreen>
   Widget _buildStoreTile(Map<String, dynamic> store, int index,
       [Animation<double>? animation]) {
     return SizeTransition(
-      sizeFactor: animation ?? AlwaysStoppedAnimation(1),
+      sizeFactor: animation ?? const AlwaysStoppedAnimation(1),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
-        leading: CircleAvatar(
-          radius: 25,
-          backgroundImage: store['profile_picture'] != null
-              ? NetworkImage(store['profile_picture'])
-              : const AssetImage('assets/default_avatar.png') as ImageProvider,
+        contentPadding: const EdgeInsets.symmetric(vertical: 5.0),
+        leading: Container(
+          padding: const EdgeInsets.all(3.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              colors: [
+                Colors.blueAccent,
+                Color(0xFF2196F3)
+              ], // Dois tons de azul
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: CircleAvatar(
+            radius: 23,
+            backgroundColor: Colors.white,
+            child: CircleAvatar(
+              radius: 21,
+              backgroundImage: store['profile_picture'] != null
+                  ? NetworkImage(store['profile_picture'])
+                  : const AssetImage('assets/default_avatar.png')
+                      as ImageProvider,
+            ),
+          ),
         ),
         title: Text(
           store['company_name'],
@@ -114,12 +135,13 @@ class _FollowersScreenState extends State<FollowersScreen>
             ),
           ),
         ),
-        trailing: ElevatedButton(
+        trailing: TextButton(
           onPressed: () {
             _unfollowStore(store['id'], index);
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black,
+          style: TextButton.styleFrom(
+            backgroundColor:
+                Colors.black.withOpacity(0.05), // Mais transparente
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -130,7 +152,7 @@ class _FollowersScreenState extends State<FollowersScreen>
               textStyle: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Colors.black,
               ),
             ),
           ),
@@ -140,23 +162,25 @@ class _FollowersScreenState extends State<FollowersScreen>
   }
 
   Widget _buildStoreList(List<Map<String, dynamic>>? stores, bool isLoading) {
-    return isLoading
-        ? const Center(child: LoadingDots())
-        : stores == null
-            ? const Center(
-                child: Text(
-                  'Erro ao carregar dados',
-                  style: TextStyle(color: Colors.red, fontSize: 16),
-                ),
-              )
-            : AnimatedList(
-                key: _listKey,
-                initialItemCount: stores.length,
-                itemBuilder: (context, index, animation) {
-                  final store = stores[index];
-                  return _buildStoreTile(store, index, animation);
-                },
-              );
+    if (isLoading) {
+      return const Center(child: LoadingDots());
+    } else if (stores == null) {
+      return const Center(
+        child: Text(
+          'Erro ao carregar dados',
+          style: TextStyle(color: Colors.red, fontSize: 16),
+        ),
+      );
+    } else {
+      return AnimatedList(
+        key: _listKey,
+        initialItemCount: stores.length,
+        itemBuilder: (context, index, animation) {
+          final store = stores[index];
+          return _buildStoreTile(store, index, animation);
+        },
+      );
+    }
   }
 
   Widget _buildIndicator(bool isActive) {
@@ -166,7 +190,7 @@ class _FollowersScreenState extends State<FollowersScreen>
       height: 4.0,
       width: isActive ? 24.0 : 0.0,
       decoration: BoxDecoration(
-        color: isActive ? Colors.black : Colors.transparent,
+        color: isActive ? Colors.blue : Colors.transparent,
         borderRadius: BorderRadius.circular(2.0),
       ),
     );
@@ -174,85 +198,125 @@ class _FollowersScreenState extends State<FollowersScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (isLoadingFollowing || isLoadingFollowers) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
-      body: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 50),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blueAccent, Colors.white], // Azul e branco
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(top: 60.0, bottom: 20.0, left: 16.0),
+              child: Column(
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      if (mounted) {
-                        setState(() {
-                          currentIndex = 1;
-                        });
-                      }
-                    },
-                    child: Column(
-                      children: [
-                        Text(
-                          '417',
-                          style: GoogleFonts.lato(
-                            textStyle: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold),
+                  const SizedBox(height: 20),
+                  Card(
+                    color: Colors.white,
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                currentIndex = 1;
+                              });
+                            },
+                            child: Column(
+                              children: [
+                                Text(
+                                  '${followingStores?.length ?? 0}',
+                                  style: GoogleFonts.lato(
+                                    textStyle: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  'Seguindo',
+                                  style: GoogleFonts.lato(
+                                    textStyle: TextStyle(
+                                      color: currentIndex == 1
+                                          ? Colors.blueAccent
+                                          : Colors.black,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                _buildIndicator(currentIndex == 1),
+                              ],
+                            ),
                           ),
-                        ),
-                        Text(
-                          'seguindo',
-                          style: GoogleFonts.lato(
-                            textStyle: const TextStyle(
-                                color: Colors.black, fontSize: 16),
+                          _buildDivider(),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                currentIndex = 0;
+                              });
+                            },
+                            child: Column(
+                              children: [
+                                Text(
+                                  '${followersStores?.length ?? 0}',
+                                  style: GoogleFonts.lato(
+                                    textStyle: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  'Seguidores',
+                                  style: GoogleFonts.lato(
+                                    textStyle: TextStyle(
+                                      color: currentIndex == 0
+                                          ? Colors.blueAccent
+                                          : Colors.black,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                _buildIndicator(currentIndex == 0),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        _buildIndicator(currentIndex == 1),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      if (mounted) {
-                        setState(() {
-                          currentIndex = 0;
-                        });
-                      }
-                    },
-                    child: Column(
-                      children: [
-                        Text(
-                          '211',
-                          style: GoogleFonts.lato(
-                            textStyle: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Text(
-                          'seguidores',
-                          style: GoogleFonts.lato(
-                            textStyle: const TextStyle(
-                                color: Colors.black, fontSize: 16),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _buildIndicator(currentIndex == 0),
-                      ],
-                    ),
-                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-            Expanded(
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
               child: IndexedStack(
                 index: currentIndex,
                 children: [
@@ -261,8 +325,18 @@ class _FollowersScreenState extends State<FollowersScreen>
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      height: 50,
+      child: const VerticalDivider(
+        color: Colors.grey,
+        thickness: 1,
       ),
     );
   }
