@@ -7,10 +7,11 @@ class FollowersWidget extends StatefulWidget {
   final TextEditingController searchController;
   final ValueChanged<int> onTotalFollowersChanged;
 
-  FollowersWidget({
+  const FollowersWidget({
+    Key? key,
     required this.searchController,
     required this.onTotalFollowersChanged,
-  });
+  }) : super(key: key);
 
   @override
   _FollowersWidgetState createState() => _FollowersWidgetState();
@@ -41,9 +42,7 @@ class _FollowersWidgetState extends State<FollowersWidget> {
     setState(() {
       isLoadingFollowers = true;
     });
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      _fetchFollowersStores();
-    });
+    _debounce = Timer(const Duration(milliseconds: 500), _fetchFollowersStores);
   }
 
   Future<void> _fetchFollowersStores() async {
@@ -88,15 +87,58 @@ class _FollowersWidgetState extends State<FollowersWidget> {
             itemCount: followersStores?.length ?? 0,
             itemBuilder: (context, index) {
               final store = followersStores![index];
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: store['avatar'] != null
-                      ? NetworkImage(store['avatar'])
-                      : null,
-                  child:
-                      store['avatar'] == null ? Text(store['name'][0]) : null,
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1,
+                        blurRadius: 3,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(right: 16.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.blue, width: 2.0),
+                            shape: BoxShape.circle,
+                          ),
+                          child: CircleAvatar(
+                            backgroundImage: store['avatar'] != null
+                                ? NetworkImage(store['avatar'])
+                                : null,
+                            radius: 30,
+                            child: store['avatar'] == null
+                                ? Text(
+                                    store['name'][0],
+                                    style: const TextStyle(fontSize: 24),
+                                  )
+                                : null,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            store['name'],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                title: Text(store['name']),
               );
             },
           ),

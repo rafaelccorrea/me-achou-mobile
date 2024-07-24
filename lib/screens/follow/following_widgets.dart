@@ -6,57 +6,60 @@ Widget buildStoreTile(Map<String, dynamic> store, int index,
     [Animation<double>? animation, Function(String, int)? onUnfollow]) {
   return SizeTransition(
     sizeFactor: animation ?? const AlwaysStoppedAnimation(1),
-    child: ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 5.0),
-      leading: Container(
-        padding: const EdgeInsets.all(3.0),
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [Colors.blueAccent, Color(0xFF2196F3)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(8.0),
+        leading: Container(
+          padding: const EdgeInsets.all(3.0),
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [Colors.blueAccent, Color(0xFF2196F3)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
-        ),
-        child: CircleAvatar(
-          radius: 23,
-          backgroundColor: Colors.white,
           child: CircleAvatar(
-            radius: 21,
-            backgroundImage: store['profile_picture'] != null
-                ? NetworkImage(store['profile_picture'])
-                : const AssetImage('assets/default_avatar.png')
-                    as ImageProvider,
+            radius: 23,
+            backgroundColor: Colors.white,
+            child: CircleAvatar(
+              radius: 21,
+              backgroundImage: store['profile_picture'] != null
+                  ? NetworkImage(store['profile_picture'])
+                  : const AssetImage('assets/default_avatar.png')
+                      as ImageProvider,
+            ),
           ),
         ),
-      ),
-      title: Text(
-        store['company_name'] ?? 'No Name',
-        style: GoogleFonts.lato(
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-      ),
-      trailing: TextButton(
-        onPressed: () {
-          if (onUnfollow != null) onUnfollow(store['id'], index);
-        },
-        style: TextButton.styleFrom(
-          backgroundColor: Colors.black.withOpacity(0.05),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        child: Text(
-          'Remover',
+        title: Text(
+          store['company_name'] ?? 'No Name',
           style: GoogleFonts.lato(
             textStyle: const TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        trailing: TextButton(
+          onPressed: () {
+            if (onUnfollow != null) onUnfollow(store['id'], index);
+          },
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.blueGrey.withOpacity(0.1),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Text(
+            'Remover',
+            style: GoogleFonts.lato(
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
           ),
         ),
