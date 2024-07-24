@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:meachou/screens/follow/followers_search_widgets.dart';
 import 'package:meachou/services/follow_store.dart';
@@ -136,6 +137,35 @@ class _FollowersScreenState extends State<FollowersScreen> {
           isSearching = false;
         });
       }
+    }
+  }
+
+  Future<void> _unfollowStoreAndUpdate(String storeId, int index) async {
+    final removedStore = followingStores!.removeAt(index);
+    _followingListKey.currentState!.removeItem(
+      index,
+      (context, animation) => buildStoreTile(removedStore, index, animation),
+    );
+    setState(() {
+      totalFollowing--;
+    });
+
+    try {
+      await followService.unfollowStore(storeId);
+    } catch (e) {
+      // Revert the removal in case of failure
+      followingStores!.insert(index, removedStore);
+      _followingListKey.currentState!.insertItem(index);
+      setState(() {
+        totalFollowing++;
+      });
+      Fluttertoast.showToast(
+        msg: 'Erro ao deixar de seguir a loja.',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
     }
   }
 
@@ -401,7 +431,8 @@ class _FollowersScreenState extends State<FollowersScreen> {
             initialItemCount: followingStores?.length ?? 0,
             itemBuilder: (context, index, animation) {
               final store = followingStores![index];
-              return buildStoreTile(store, index, animation);
+              return buildStoreTile(
+                  store, index, animation, _unfollowStoreAndUpdate);
             },
           ),
         ),

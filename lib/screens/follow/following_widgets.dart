@@ -1,9 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:meachou/components/loading/loading_dots.dart';
+import 'package:meachou/services/follow_store.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+final FollowsService followsService = FollowsService();
+
+Future<void> unfollowStore(String storeId) async {
+  try {
+    await followsService.unfollowStore(storeId);
+    Fluttertoast.showToast(
+      msg: 'Deixou de seguir a loja com sucesso.',
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.green,
+      textColor: Colors.white,
+    );
+  } catch (e) {
+    Fluttertoast.showToast(
+      msg: 'Erro ao deixar de seguir a loja.',
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+    );
+  }
+}
 
 Widget buildStoreTile(Map<String, dynamic> store, int index,
-    [Animation<double>? animation, Function(String, int)? onUnfollow]) {
+    [Animation<double>? animation,
+    Future<void> Function(String, int)? onUnfollow]) {
   return SizeTransition(
     sizeFactor: animation ?? const AlwaysStoppedAnimation(1),
     child: Container(
@@ -44,7 +70,11 @@ Widget buildStoreTile(Map<String, dynamic> store, int index,
         ),
         trailing: TextButton(
           onPressed: () {
-            if (onUnfollow != null) onUnfollow(store['id'], index);
+            if (onUnfollow != null) {
+              onUnfollow(store['id'], index);
+            } else {
+              unfollowStore(store['id']);
+            }
           },
           style: TextButton.styleFrom(
             backgroundColor: Colors.blueGrey.withOpacity(0.1),
@@ -72,7 +102,7 @@ Widget buildStoreList(
     List<Map<String, dynamic>>? stores,
     bool isLoading,
     GlobalKey<AnimatedListState> listKey,
-    Future<void> Function(String, int) onUnfollow,
+    Future<void> Function(String, int)? onUnfollow,
     bool isSearching) {
   if (isLoading) {
     return const Center(child: LoadingDots());
