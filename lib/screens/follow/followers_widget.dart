@@ -38,6 +38,9 @@ class _FollowersWidgetState extends State<FollowersWidget> {
 
   void _onSearchChanged() {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
+    setState(() {
+      isLoadingFollowers = true;
+    });
     _debounce = Timer(const Duration(milliseconds: 500), () {
       _fetchFollowersStores();
     });

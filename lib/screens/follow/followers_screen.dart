@@ -40,6 +40,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
     super.initState();
     _fetchFollowedStores();
     _searchController.addListener(_onSearchChanged);
+    _followersSearchController.addListener(_onFollowersSearchChanged);
   }
 
   @override
@@ -47,6 +48,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
     _debounce?.cancel();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _followersSearchController.removeListener(_onFollowersSearchChanged);
     _followersSearchController.dispose();
     super.dispose();
   }
