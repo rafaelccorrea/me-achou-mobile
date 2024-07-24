@@ -108,7 +108,7 @@ class _FollowersWidgetState extends State<FollowersWidget> {
                     child: Row(
                       children: [
                         Container(
-                          margin: const EdgeInsets.only(right: 16.0),
+                          margin: const EdgeInsets.only(right: 20.0),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.blue, width: 2.0),
                             shape: BoxShape.circle,
@@ -117,7 +117,7 @@ class _FollowersWidgetState extends State<FollowersWidget> {
                             backgroundImage: store['avatar'] != null
                                 ? NetworkImage(store['avatar'])
                                 : null,
-                            radius: 30,
+                            radius: 25,
                             child: store['avatar'] == null
                                 ? Text(
                                     store['name'][0],
