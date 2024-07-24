@@ -25,8 +25,6 @@ class _FollowersScreenState extends State<FollowersScreen> {
   int currentIndex = 1;
   final GlobalKey<AnimatedListState> _followingListKey =
       GlobalKey<AnimatedListState>();
-  final GlobalKey<AnimatedListState> _followersListKey =
-      GlobalKey<AnimatedListState>();
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _followersSearchController =
       TextEditingController();
@@ -73,7 +71,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
     });
   }
 
-  Future<void> _fetchFollowedStores() async {
+  Future<void> _fetchFollowedStores({bool clearFilters = false}) async {
     setState(() {
       isLoadingFollowing = true;
     });
@@ -81,10 +79,13 @@ class _FollowersScreenState extends State<FollowersScreen> {
       final response = await followService.getFollowingStores(
         page: 1,
         limit: 10,
-        companyName:
-            _searchController.text.isEmpty ? null : _searchController.text,
-        rankingMin: rankingMin,
-        rankingMax: rankingMax,
+        companyName: clearFilters
+            ? null
+            : _searchController.text.isEmpty
+                ? null
+                : _searchController.text,
+        rankingMin: clearFilters ? null : rankingMin,
+        rankingMax: clearFilters ? null : rankingMax,
       );
       if (mounted) {
         setState(() {
@@ -105,7 +106,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
     }
   }
 
-  Future<void> _fetchFollowersStores() async {
+  Future<void> _fetchFollowersStores({bool clearFilters = false}) async {
     setState(() {
       isLoadingFollowers = true;
     });
@@ -113,9 +114,11 @@ class _FollowersScreenState extends State<FollowersScreen> {
       final response = await followService.getFollowersStores(
         page: 1,
         limit: 10,
-        name: _followersSearchController.text.isEmpty
+        name: clearFilters
             ? null
-            : _followersSearchController.text,
+            : _followersSearchController.text.isEmpty
+                ? null
+                : _followersSearchController.text,
       );
       if (mounted) {
         setState(() {
@@ -190,7 +193,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                       rankingMax = null;
                     });
                     Navigator.of(context).pop();
-                    _fetchFollowedStores();
+                    _fetchFollowedStores(clearFilters: true);
                   },
                 ),
                 TextButton(
@@ -213,7 +216,12 @@ class _FollowersScreenState extends State<FollowersScreen> {
       rankingMin = null;
       rankingMax = null;
     });
-    _fetchFollowedStores();
+    _fetchFollowedStores(clearFilters: true);
+  }
+
+  void _clearSearchFields() {
+    _searchController.clear();
+    _followersSearchController.clear();
   }
 
   @override
@@ -252,7 +260,10 @@ class _FollowersScreenState extends State<FollowersScreen> {
                             onTap: () {
                               setState(() {
                                 currentIndex = 1;
+                                _fetchFollowersStores(clearFilters: true);
+                                _clearSearchFields();
                               });
+                              _fetchFollowedStores();
                             },
                             child: Column(
                               children: [
@@ -287,8 +298,10 @@ class _FollowersScreenState extends State<FollowersScreen> {
                             onTap: () {
                               setState(() {
                                 currentIndex = 0;
-                                _onFollowersSearchChanged();
+                                _fetchFollowedStores(clearFilters: true);
+                                _clearSearchFields();
                               });
+                              _fetchFollowersStores();
                             },
                             child: Column(
                               children: [
@@ -353,8 +366,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
           ),
           Expanded(
             child: IndexedStack(
-              index: currentIndex.clamp(
-                  0, 1), // Ensure currentIndex is within valid range
+              index: currentIndex.clamp(0, 1),
               children: [
                 FollowersWidget(
                   searchController: _followersSearchController,
