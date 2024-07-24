@@ -21,7 +21,8 @@ class HomeContent extends StatefulWidget {
   _HomeContentState createState() => _HomeContentState();
 }
 
-class _HomeContentState extends State<HomeContent> {
+class _HomeContentState extends State<HomeContent>
+    with AutomaticKeepAliveClientMixin<HomeContent> {
   List<dynamic> stores = [];
   List<dynamic> events = [];
   bool isLoadingStores = true;
@@ -44,18 +45,8 @@ class _HomeContentState extends State<HomeContent> {
   @override
   void initState() {
     super.initState();
-    _fetchUserStoreIdOperation =
-        CancelableOperation.fromFuture(fetchUserStoreId());
+    _scrollController.addListener(_onScroll);
     applyFilters(widget.filters);
-    _scrollController.addListener(() {
-      if (_scrollController.position.atEdge) {
-        bool isBottom = _scrollController.position.pixels ==
-            _scrollController.position.maxScrollExtent;
-        if (isBottom && !isLoadingMoreStores) {
-          loadMoreStores();
-        }
-      }
-    });
   }
 
   @override
@@ -67,7 +58,21 @@ class _HomeContentState extends State<HomeContent> {
     super.dispose();
   }
 
+  @override
+  bool get wantKeepAlive => true;
+
+  void _onScroll() {
+    if (_scrollController.position.atEdge &&
+        _scrollController.position.pixels ==
+            _scrollController.position.maxScrollExtent &&
+        !isLoadingMoreStores) {
+      loadMoreStores();
+    }
+  }
+
   Future<void> fetchUserStoreId() async {
+    if (!mounted) return;
+
     try {
       final response = await storeService
           .getStoreDetails()
@@ -88,27 +93,25 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Future<void> applyFilters(Map<String, dynamic>? filters) async {
-    if (mounted) {
-      setState(() {
-        _currentFilters = filters ?? {};
-      });
-      String? city = _currentFilters['city'];
-      setState(() {
-        currentCity = city ?? 'Marília';
-      });
-    }
+    if (!mounted) return;
+
+    setState(() {
+      _currentFilters = filters ?? {};
+      currentCity = _currentFilters['city'] ?? 'Marília';
+    });
+
     _fetchStoresOperation =
         CancelableOperation.fromFuture(fetchStores(filters: _currentFilters));
     fetchEvents(filters: _currentFilters, page: 1, limit: 10);
   }
 
   Future<void> fetchStores({Map<String, dynamic>? filters}) async {
-    if (mounted) {
-      setState(() {
-        isLoadingStores = true;
-        currentPage = 1;
-      });
-    }
+    if (!mounted) return;
+
+    setState(() {
+      isLoadingStores = true;
+      currentPage = 1;
+    });
 
     try {
       final response = await storeService
@@ -150,11 +153,11 @@ class _HomeContentState extends State<HomeContent> {
   }
 
   Future<void> loadMoreStores() async {
-    if (mounted) {
-      setState(() {
-        isLoadingMoreStores = true;
-      });
-    }
+    if (!mounted) return;
+
+    setState(() {
+      isLoadingMoreStores = true;
+    });
 
     try {
       final response = await storeService
@@ -201,11 +204,11 @@ class _HomeContentState extends State<HomeContent> {
       {Map<String, dynamic>? filters,
       required int page,
       required int limit}) async {
-    if (mounted) {
-      setState(() {
-        isLoadingEvents = true;
-      });
-    }
+    if (!mounted) return;
+
+    setState(() {
+      isLoadingEvents = true;
+    });
 
     try {
       final response = await eventService
@@ -245,7 +248,6 @@ class _HomeContentState extends State<HomeContent> {
   Future<void> followStore(String storeId) async {
     if (_isOwnStore(storeId)) return;
 
-    // Atualiza o estado instantaneamente
     setState(() {
       _updateStoreFollowStatus(storeId, true);
       _confettiControllers[storeId]?.play();
@@ -254,7 +256,6 @@ class _HomeContentState extends State<HomeContent> {
     try {
       await followsService.followStore(storeId);
     } catch (e) {
-      // Reverte o estado se a API falhar
       setState(() {
         _updateStoreFollowStatus(storeId, false);
       });
@@ -265,7 +266,6 @@ class _HomeContentState extends State<HomeContent> {
   Future<void> unfollowStore(String storeId) async {
     if (_isOwnStore(storeId)) return;
 
-    // Atualiza o estado instantaneamente
     setState(() {
       _updateStoreFollowStatus(storeId, false);
     });
@@ -273,7 +273,6 @@ class _HomeContentState extends State<HomeContent> {
     try {
       await followsService.unfollowStore(storeId);
     } catch (e) {
-      // Reverte o estado se a API falhar
       setState(() {
         _updateStoreFollowStatus(storeId, true);
       });
@@ -310,6 +309,8 @@ class _HomeContentState extends State<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Necessary for AutomaticKeepAliveClientMixin
+
     return Scaffold(
       body: SingleChildScrollView(
         controller: _scrollController,

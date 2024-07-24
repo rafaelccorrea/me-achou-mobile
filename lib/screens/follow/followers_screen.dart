@@ -256,7 +256,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          GestureDetector(
+                          InkWell(
                             onTap: () {
                               setState(() {
                                 currentIndex = 1;
@@ -294,7 +294,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                             ),
                           ),
                           buildDivider(),
-                          GestureDetector(
+                          InkWell(
                             onTap: () {
                               setState(() {
                                 currentIndex = 0;
