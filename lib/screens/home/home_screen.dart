@@ -89,15 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
               MaterialPageRoute(builder: (context) => const LoginScreen()),
             );
           });
-
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Erro'),
-            ),
-            body: const Center(
-              child: CircularProgressIndicator(),
-            ),
-          );
         }
 
         final user = snapshot.data!;
