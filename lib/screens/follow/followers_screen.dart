@@ -290,10 +290,9 @@ class _FollowersScreenState extends State<FollowersScreen> {
                             onTap: () {
                               setState(() {
                                 currentIndex = 1;
-                                _fetchFollowersStores(clearFilters: true);
+                                _fetchFollowedStores(clearFilters: true);
                                 _clearSearchFields();
                               });
-                              _fetchFollowedStores();
                             },
                             child: Column(
                               children: [
@@ -328,10 +327,9 @@ class _FollowersScreenState extends State<FollowersScreen> {
                             onTap: () {
                               setState(() {
                                 currentIndex = 0;
-                                _fetchFollowedStores(clearFilters: true);
+                                _fetchFollowersStores(clearFilters: true);
                                 _clearSearchFields();
                               });
-                              _fetchFollowersStores();
                             },
                             child: Column(
                               children: [
@@ -398,20 +396,30 @@ class _FollowersScreenState extends State<FollowersScreen> {
             child: IndexedStack(
               index: currentIndex.clamp(0, 1),
               children: [
-                FollowersWidget(
-                  searchController: _followersSearchController,
-                  onTotalFollowersChanged: (total) {
-                    setState(() {
-                      totalFollowers = total;
-                    });
-                  },
-                ),
+                buildFollowersList(),
                 buildFollowingList(),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget buildFollowersList() {
+    if (isLoadingFollowers) {
+      return const Center(
+        child: LoadingDots(),
+      );
+    }
+
+    return FollowersWidget(
+      searchController: _followersSearchController,
+      onTotalFollowersChanged: (total) {
+        setState(() {
+          totalFollowers = total;
+        });
+      },
     );
   }
 
