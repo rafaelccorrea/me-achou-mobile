@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -105,7 +107,8 @@ class _HomeContentState extends State<HomeContent>
     fetchEvents(filters: _currentFilters, page: 1, limit: 10);
   }
 
-  Future<void> fetchStores({Map<String, dynamic>? filters}) async {
+  Future<void> fetchStores(
+      {Map<String, dynamic>? filters, int retries = 3}) async {
     if (!mounted) return;
 
     setState(() {
@@ -113,127 +116,175 @@ class _HomeContentState extends State<HomeContent>
       currentPage = 1;
     });
 
-    try {
-      final response = await storeService
-          .getStores(
-            page: 1,
-            limit: 10,
-            businessSector: filters?['business_sector'] ?? '',
-            city: currentCity,
-            region: filters?['region'],
-            rankingMin: filters?['ranking_min'],
-            rankingMax: filters?['ranking_max'],
-            delivery:
-                filters?['delivery'] == false ? null : filters?['delivery'],
-            inHomeService: filters?['in_home_service'] == false
-                ? null
-                : filters?['in_home_service'],
-          )
-          .timeout(const Duration(seconds: 10));
+    for (int attempt = 0; attempt < retries; attempt++) {
+      try {
+        final response = await storeService
+            .getStores(
+              page: 1,
+              limit: 10,
+              businessSector: filters?['business_sector'] ?? '',
+              city: currentCity,
+              region: filters?['region'],
+              rankingMin: filters?['ranking_min'],
+              rankingMax: filters?['ranking_max'],
+              delivery:
+                  filters?['delivery'] == false ? null : filters?['delivery'],
+              inHomeService: filters?['in_home_service'] == false
+                  ? null
+                  : filters?['in_home_service'],
+            )
+            .timeout(const Duration(seconds: 10));
 
-      if (response?.statusCode == 200) {
-        if (mounted) {
-          setState(() {
-            stores = json.decode(response!.body)['data'];
-            isLoadingStores = false;
-            _initializeConfettiControllers();
-          });
+        if (response?.statusCode == 200) {
+          if (mounted) {
+            setState(() {
+              stores = json.decode(response!.body)['data'];
+              isLoadingStores = false;
+              _initializeConfettiControllers();
+            });
+          }
+          return; // Successful response, exit the loop
+        } else if (response?.statusCode == 404) {
+          if (mounted) {
+            setState(() {
+              stores = [];
+              isLoadingStores = false;
+            });
+          }
+          return; // No stores found, exit the loop
+        } else {
+          throw Exception('Failed to load stores');
         }
-      } else {
-        throw Exception('Failed to load stores');
+      } catch (e) {
+        if (attempt == retries - 1) {
+          if (mounted) {
+            setState(() {
+              isLoadingStores = false;
+            });
+          }
+          if (e is TimeoutException) {
+            _showErrorToast(
+                'Erro ao carregar as lojas após várias tentativas.');
+          }
+        }
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          isLoadingStores = false;
-        });
-      }
-      _showErrorToast('Erro ao carregar as lojas.');
     }
   }
 
-  Future<void> loadMoreStores() async {
+  Future<void> loadMoreStores({int retries = 3}) async {
     if (!mounted) return;
 
     setState(() {
       isLoadingMoreStores = true;
     });
 
-    try {
-      final response = await storeService
-          .getStores(
-            page: currentPage + 1,
-            limit: 10,
-            businessSector: _currentFilters['business_sector'] ?? '',
-            city: currentCity,
-            region: _currentFilters['region'],
-            rankingMin: _currentFilters['ranking_min'],
-            rankingMax: _currentFilters['ranking_max'],
-            delivery: _currentFilters['delivery'] == false
-                ? null
-                : _currentFilters['delivery'],
-            inHomeService: _currentFilters['in_home_service'] == false
-                ? null
-                : _currentFilters['in_home_service'],
-          )
-          .timeout(const Duration(seconds: 10));
+    for (int attempt = 0; attempt < retries; attempt++) {
+      try {
+        final response = await storeService
+            .getStores(
+              page: currentPage + 1,
+              limit: 10,
+              businessSector: _currentFilters['business_sector'] ?? '',
+              city: currentCity,
+              region: _currentFilters['region'],
+              rankingMin: _currentFilters['ranking_min'],
+              rankingMax: _currentFilters['ranking_max'],
+              delivery: _currentFilters['delivery'] == false
+                  ? null
+                  : _currentFilters['delivery'],
+              inHomeService: _currentFilters['in_home_service'] == false
+                  ? null
+                  : _currentFilters['in_home_service'],
+            )
+            .timeout(const Duration(seconds: 10));
 
-      if (response?.statusCode == 200) {
-        final newStores = json.decode(response!.body)['data'];
-        if (mounted) {
-          setState(() {
-            stores.addAll(newStores);
-            currentPage += 1;
-            isLoadingMoreStores = false;
-          });
+        if (response?.statusCode == 200) {
+          final newStores = json.decode(response!.body)['data'];
+          if (mounted) {
+            setState(() {
+              stores.addAll(newStores);
+              currentPage += 1;
+              isLoadingMoreStores = false;
+            });
+          }
+          return; // Successful response, exit the loop
+        } else if (response?.statusCode == 404) {
+          if (mounted) {
+            setState(() {
+              isLoadingMoreStores = false;
+            });
+          }
+          return; // No more stores found, exit the loop
+        } else {
+          throw Exception('Failed to load more stores');
         }
-      } else {
-        throw Exception('Failed to load more stores');
+      } catch (e) {
+        if (attempt == retries - 1) {
+          if (mounted) {
+            setState(() {
+              isLoadingMoreStores = false;
+            });
+          }
+          if (e is TimeoutException) {
+            _showErrorToast(
+                'Erro ao carregar mais lojas após várias tentativas.');
+          }
+        }
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          isLoadingMoreStores = false;
-        });
-      }
-      _showErrorToast('Erro ao carregar mais lojas.');
     }
   }
 
   Future<void> fetchEvents(
       {Map<String, dynamic>? filters,
       required int page,
-      required int limit}) async {
+      required int limit,
+      int retries = 3}) async {
     if (!mounted) return;
 
     setState(() {
       isLoadingEvents = true;
     });
 
-    try {
-      final response = await eventService
-          .getEvents(
-            page: page,
-            limit: limit,
-            city: currentCity,
-          )
-          .timeout(const Duration(seconds: 10));
+    for (int attempt = 0; attempt < retries; attempt++) {
+      try {
+        final response = await eventService
+            .getEvents(
+              page: page,
+              limit: limit,
+              city: currentCity,
+            )
+            .timeout(const Duration(seconds: 10));
 
-      if (response?.statusCode == 200) {
-        if (mounted) {
-          setState(() {
-            events = json.decode(response!.body)['data'];
-            isLoadingEvents = false;
-          });
+        if (response?.statusCode == 200) {
+          if (mounted) {
+            setState(() {
+              events = json.decode(response!.body)['data'];
+              isLoadingEvents = false;
+            });
+          }
+          return; // Successful response, exit the loop
+        } else if (response?.statusCode == 404) {
+          if (mounted) {
+            setState(() {
+              events = [];
+              isLoadingEvents = false;
+            });
+          }
+          return; // No events found, exit the loop
+        } else {
+          throw Exception('Failed to load events');
         }
-      } else {
-        throw Exception('Failed to load events');
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          isLoadingEvents = false;
-        });
+      } catch (e) {
+        if (attempt == retries - 1) {
+          if (mounted) {
+            setState(() {
+              isLoadingEvents = false;
+            });
+          }
+          if (e is TimeoutException) {
+            _showErrorToast('Erro ao carregar eventos após várias tentativas.');
+          }
+        }
       }
     }
   }
@@ -334,30 +385,18 @@ class _HomeContentState extends State<HomeContent>
               ],
             ),
             const SizedBox(height: 10),
-            if (isLoadingEvents)
+            if (isLoadingEvents || isLoadingStores)
               LoadingSkeletons()
-            else if (events.isEmpty)
-              isLoadingStores
-                  ? LoadingSkeletons()
-                  : StoreList(
-                      stores: stores,
-                      userStoreId: userStoreId,
-                      followStore: followStore,
-                      unfollowStore: unfollowStore,
-                      confettiControllers: _confettiControllers,
-                    )
             else ...[
-              EventCarousel(events: events),
+              if (events.isNotEmpty) EventCarousel(events: events),
               const SizedBox(height: 20),
-              isLoadingStores
-                  ? LoadingSkeletons()
-                  : StoreList(
-                      stores: stores,
-                      userStoreId: userStoreId,
-                      followStore: followStore,
-                      unfollowStore: unfollowStore,
-                      confettiControllers: _confettiControllers,
-                    ),
+              StoreList(
+                stores: stores,
+                userStoreId: userStoreId,
+                followStore: followStore,
+                unfollowStore: unfollowStore,
+                confettiControllers: _confettiControllers,
+              ),
             ],
             if (isLoadingMoreStores) ...[
               const Padding(
