@@ -37,7 +37,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchFollowedStores();
+    _fetchInitialData();
     _searchController.addListener(_onSearchChanged);
     _followersSearchController.addListener(_onFollowersSearchChanged);
   }
@@ -70,6 +70,13 @@ class _FollowersScreenState extends State<FollowersScreen> {
     _debounce = Timer(const Duration(milliseconds: 500), () {
       _fetchFollowersStores();
     });
+  }
+
+  Future<void> _fetchInitialData() async {
+    await Future.wait([
+      _fetchFollowedStores(),
+      _fetchFollowersStores(),
+    ]);
   }
 
   Future<void> _fetchFollowedStores({bool clearFilters = false}) async {
