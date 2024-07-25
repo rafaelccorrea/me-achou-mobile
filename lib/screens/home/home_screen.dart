@@ -83,12 +83,13 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         if (snapshot.hasError || snapshot.data == null) {
-          WidgetsBinding.instance?.addPostFrameCallback((_) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const LoginScreen()),
             );
           });
+          return Scaffold(); // Return an empty scaffold to avoid build errors
         }
 
         final user = snapshot.data!;
