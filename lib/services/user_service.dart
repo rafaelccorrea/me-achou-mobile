@@ -47,12 +47,8 @@ class UserService {
     }
   }
 
-  Future<Map<String, dynamic>> deleteUser() async {
+  Future<http.Response> deleteUser() async {
     final response = await apiClient.delete(ApiConstants.userDeleteEndpoint);
-
-    return {
-      'statusCode': response.statusCode,
-      'body': jsonDecode(response.body)
-    };
+    return response;
   }
 }

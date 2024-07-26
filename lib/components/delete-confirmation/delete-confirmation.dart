@@ -22,6 +22,7 @@ class _ConfirmActionComponentState extends State<ConfirmActionComponent> {
   bool _isLoading = false;
 
   Future<void> _handleConfirm() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -29,16 +30,20 @@ class _ConfirmActionComponentState extends State<ConfirmActionComponent> {
     try {
       await widget.onConfirm();
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$error'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

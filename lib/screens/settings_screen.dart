@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -22,6 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   bool _isLoading = false;
   String _loadingOperation = '';
   late AnimationController _animationController;
+  late AuthService _authService;
 
   @override
   void initState() {
@@ -29,6 +31,13 @@ class _SettingsScreenState extends State<SettingsScreen>
     _animationController =
         AnimationController(vsync: this, duration: const Duration(seconds: 1));
     _animationController.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Garantir que o AuthService seja inicializado aqui
+    _authService = Provider.of<AuthService>(context, listen: false);
   }
 
   @override
@@ -160,10 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen>
               _loadingOperation == 'delete'
                   ? 'Deletando conta...'
                   : 'Saindo...',
-              style: GoogleFonts.lato(
-                fontSize: 18,
-                color: Colors.black87,
-              ),
+              style: GoogleFonts.lato(fontSize: 18, color: Colors.black87),
             ),
           ],
         ),
@@ -197,7 +203,7 @@ class _SettingsScreenState extends State<SettingsScreen>
               confirmButtonText: 'Confirmar',
               onConfirm: () async {
                 Navigator.of(context).pop();
-                await _deleteAccount(context);
+                await _deleteAccount();
               },
               buttonColor: Colors.redAccent.withOpacity(0.7),
             ),
@@ -207,7 +213,8 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  Future<void> _deleteAccount(BuildContext context) async {
+  Future<void> _deleteAccount() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _loadingOperation = 'delete';
@@ -216,23 +223,23 @@ class _SettingsScreenState extends State<SettingsScreen>
     try {
       UserService userService = UserService();
       final response = await userService.deleteUser();
-      if (response['statusCode'] == 200) {
-        AuthService authService =
-            Provider.of<AuthService>(context, listen: false);
-        await authService.logout();
+      if (response.statusCode == 200) {
+        await _authService.logout();
 
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       } else {
         final errorMessage =
-            response['body']['message'] ?? 'Falha ao deletar usuário';
-        _showErrorToast(context, errorMessage);
+            jsonDecode(response.body)['message'] ?? 'Falha ao deletar usuário';
+        _showErrorToast(errorMessage);
       }
     } catch (error) {
-      _showErrorToast(context, error.toString());
+      _showErrorToast(error.toString());
     } finally {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _loadingOperation = '';
@@ -241,21 +248,22 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
 
   Future<void> _logout() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _loadingOperation = 'logout';
     });
     try {
-      AuthService authService =
-          Provider.of<AuthService>(context, listen: false);
-      await authService.logout();
+      await _authService.logout();
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } catch (error) {
-      _showErrorToast(context, error.toString());
+      _showErrorToast(error.toString());
     } finally {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _loadingOperation = '';
@@ -263,7 +271,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
 
-  void _showErrorToast(BuildContext context, String message) {
+  void _showErrorToast(String message) {
     Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
