@@ -11,6 +11,7 @@ class SubscriptionClient {
   final StreamController<String> _subscriptionStatusController =
       StreamController<String>.broadcast();
   Timer? _timer;
+  bool _isClosed = false;
 
   Stream<String> get subscriptionStatusStream =>
       _subscriptionStatusController.stream;
@@ -30,7 +31,7 @@ class SubscriptionClient {
         String status = jsonData['data']['status'];
         print('Received subscription status: $status');
         await _cacheSubscriptionStatus(status);
-        _subscriptionStatusController.add(status);
+        _addStatusToController(status);
         return status;
       } else {
         print(
@@ -61,8 +62,14 @@ class SubscriptionClient {
 
   Future<String> _handleError() async {
     String cachedStatus = await _getCachedSubscriptionStatus();
-    _subscriptionStatusController.add(cachedStatus);
+    _addStatusToController(cachedStatus);
     return cachedStatus;
+  }
+
+  void _addStatusToController(String status) {
+    if (!_isClosed && !_subscriptionStatusController.isClosed) {
+      _subscriptionStatusController.add(status);
+    }
   }
 
   void startSubscriptionCheck(Duration interval) {
@@ -72,5 +79,11 @@ class SubscriptionClient {
       print('Running periodic subscription check...');
       await checkSubscription();
     });
+  }
+
+  void close() {
+    _isClosed = true;
+    _subscriptionStatusController.close();
+    _timer?.cancel();
   }
 }

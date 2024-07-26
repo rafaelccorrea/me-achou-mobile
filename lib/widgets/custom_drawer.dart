@@ -25,8 +25,6 @@ class CustomDrawer extends StatefulWidget {
 
 class _CustomDrawerState extends State<CustomDrawer> {
   late final SubscriptionClient _subscriptionClient;
-  final ValueNotifier<String?> _subscriptionStatusNotifier =
-      ValueNotifier<String?>('NONE');
 
   @override
   void initState() {
@@ -34,43 +32,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
     _subscriptionClient =
         Provider.of<SubscriptionClient>(context, listen: false);
 
-    _subscriptionClient.subscriptionStatusStream.listen((status) {
-      _updateSubscriptionStatus(status);
-    });
-
-    _loadInitialSubscriptionStatus();
-  }
-
-  Future<void> _loadInitialSubscriptionStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? cachedStatus =
-        prefs.getString(SubscriptionClient.subscriptionStatusKey);
-    if (cachedStatus != null) {
-      _subscriptionStatusNotifier.value = cachedStatus;
-    } else {
-      AuthService authService =
-          Provider.of<AuthService>(context, listen: false);
-      authService.getUser().then((userData) {
-        if (userData != null &&
-            userData['store'] != null &&
-            userData['store']['subscription'] != null) {
-          _updateSubscriptionStatus(
-              userData['store']['subscription']['status']);
-        } else {
-          _updateSubscriptionStatus('NONE');
-        }
-      });
-    }
-  }
-
-  Future<void> _updateSubscriptionStatus(String? status) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (status != null) {
-      await prefs.setString(SubscriptionClient.subscriptionStatusKey, status);
-    } else {
-      await prefs.remove(SubscriptionClient.subscriptionStatusKey);
-    }
-    _subscriptionStatusNotifier.value = status;
+    // Start checking subscription status periodically
+    _subscriptionClient.startSubscriptionCheck(Duration(minutes: 5));
   }
 
   @override
@@ -88,9 +51,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     child: Text('Erro ao carregar informações do usuário')),
               );
             } else {
-              return ValueListenableBuilder<String?>(
-                valueListenable: _subscriptionStatusNotifier,
-                builder: (context, subscriptionStatus, child) {
+              return StreamBuilder<String>(
+                stream: _subscriptionClient.subscriptionStatusStream,
+                initialData: 'NONE',
+                builder: (context, subscriptionSnapshot) {
+                  final subscriptionStatus =
+                      subscriptionSnapshot.data ?? 'NONE';
                   return Drawer(
                     child: Container(
                       color: Colors.white,
