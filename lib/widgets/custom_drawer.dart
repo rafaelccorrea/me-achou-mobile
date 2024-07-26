@@ -45,8 +45,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? cachedStatus =
         prefs.getString(SubscriptionClient.subscriptionStatusKey);
-    print(
-        'Loaded initial subscription status from cache: $cachedStatus'); // Log para depuração
     if (cachedStatus != null) {
       _subscriptionStatusNotifier.value = cachedStatus;
     } else {
@@ -69,11 +67,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (status != null) {
       await prefs.setString(SubscriptionClient.subscriptionStatusKey, status);
-      print(
-          "Updated subscription status in cache: $status"); // Log para depuração
     } else {
       await prefs.remove(SubscriptionClient.subscriptionStatusKey);
-      print("Removed subscription status from cache"); // Log para depuração
     }
     _subscriptionStatusNotifier.value = status;
   }
@@ -102,8 +97,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
               return ValueListenableBuilder<String?>(
                 valueListenable: _subscriptionStatusNotifier,
                 builder: (context, subscriptionStatus, child) {
-                  print(
-                      "Building drawer with subscription status: $subscriptionStatus"); // Log para depuração
                   return Drawer(
                     child: Container(
                       color: Colors.white,
@@ -111,7 +104,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         children: <Widget>[
                           _buildDrawerHeader(context),
                           _buildUserInfoSection(),
-                          if (subscriptionStatus != null)
+                          if (snapshot.data?['store'] != null &&
+                              subscriptionStatus != 'NONE')
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Center(
@@ -177,7 +171,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                   _buildDrawerItem(context,
                                       icon: Icons.event_available,
                                       text: 'Eventos'),
-                                  _buildStoreSection(subscriptionStatus),
+                                  if (snapshot.data?['store'] != null)
+                                    _buildStoreSection(subscriptionStatus),
+                                  if (snapshot.data?['store'] == null)
+                                    _buildDrawerItem(
+                                      context,
+                                      icon: Icons.store,
+                                      text: 'Criar Loja',
+                                      onTap: () {
+                                        // Implementar lógica para criar loja
+                                      },
+                                    ),
                                 ],
                               ),
                             ),
@@ -248,8 +252,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   Widget _buildStoreSection(String? subscriptionStatus) {
-    print(
-        "Subscription status in _buildStoreSection: $subscriptionStatus"); // Log para depuração
     if (subscriptionStatus == 'ACTIVE') {
       return _buildExpansionTileForActiveSubscription(context);
     } else if (subscriptionStatus == 'INACTIVE') {
