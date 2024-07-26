@@ -4,6 +4,7 @@ import 'package:meachou/screens/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:meachou/services/subscription_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomDrawer extends StatefulWidget {
   final bool isOpen;
@@ -34,21 +35,47 @@ class _CustomDrawerState extends State<CustomDrawer> {
         Provider.of<SubscriptionClient>(context, listen: false);
 
     _subscriptionClient.subscriptionStatusStream.listen((status) {
-      _subscriptionStatusNotifier.value = status;
+      _updateSubscriptionStatus(status);
     });
 
-    // Set initial subscription status from user data
-    AuthService authService = Provider.of<AuthService>(context, listen: false);
-    authService.getUser().then((userData) {
-      if (userData != null &&
-          userData['store'] != null &&
-          userData['store']['subscription'] != null) {
-        _subscriptionStatusNotifier.value =
-            userData['store']['subscription']['status'];
-      } else {
-        _subscriptionStatusNotifier.value = null;
-      }
-    });
+    _loadInitialSubscriptionStatus();
+  }
+
+  Future<void> _loadInitialSubscriptionStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? cachedStatus =
+        prefs.getString(SubscriptionClient.subscriptionStatusKey);
+    print(
+        'Loaded initial subscription status from cache: $cachedStatus'); // Log para depuração
+    if (cachedStatus != null) {
+      _subscriptionStatusNotifier.value = cachedStatus;
+    } else {
+      AuthService authService =
+          Provider.of<AuthService>(context, listen: false);
+      authService.getUser().then((userData) {
+        if (userData != null &&
+            userData['store'] != null &&
+            userData['store']['subscription'] != null) {
+          _updateSubscriptionStatus(
+              userData['store']['subscription']['status']);
+        } else {
+          _updateSubscriptionStatus('NONE');
+        }
+      });
+    }
+  }
+
+  Future<void> _updateSubscriptionStatus(String? status) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (status != null) {
+      await prefs.setString(SubscriptionClient.subscriptionStatusKey, status);
+      print(
+          "Updated subscription status in cache: $status"); // Log para depuração
+    } else {
+      await prefs.remove(SubscriptionClient.subscriptionStatusKey);
+      print("Removed subscription status from cache"); // Log para depuração
+    }
+    _subscriptionStatusNotifier.value = status;
   }
 
   @override
@@ -75,6 +102,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
               return ValueListenableBuilder<String?>(
                 valueListenable: _subscriptionStatusNotifier,
                 builder: (context, subscriptionStatus, child) {
+                  print(
+                      "Building drawer with subscription status: $subscriptionStatus"); // Log para depuração
                   return Drawer(
                     child: Container(
                       color: Colors.white,
@@ -92,7 +121,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                     Text(
                                       'Status da assinatura: ',
                                       style: TextStyle(
-                                        color: Colors.grey[600], // Cinza sutil
+                                        color: Colors.grey[600],
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -103,7 +132,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                       color: subscriptionStatus == 'ACTIVE'
                                           ? Colors.green
                                           : Colors.red,
-                                      size: 20, // Tamanho menor do ícone
+                                      size: 20,
                                     ),
                                     SizedBox(width: 4),
                                     Text(
@@ -219,6 +248,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   Widget _buildStoreSection(String? subscriptionStatus) {
+    print(
+        "Subscription status in _buildStoreSection: $subscriptionStatus"); // Log para depuração
     if (subscriptionStatus == 'ACTIVE') {
       return _buildExpansionTileForActiveSubscription(context);
     } else if (subscriptionStatus == 'INACTIVE') {

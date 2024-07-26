@@ -16,46 +16,46 @@ class SubscriptionClient {
       _subscriptionStatusController.stream;
 
   SubscriptionClient() {
-    startSubscriptionCheck(Duration(minutes: 1));
+    startSubscriptionCheck(Duration(minutes: 60));
   }
 
   Future<String> checkSubscription() async {
     try {
       final uri = Uri.parse(ApiConstants.getDetailsSubscriptionEndpoint);
-      print('Checking subscription status...');
+
       final response = await apiClient.get(uri.toString());
-      print('Subscription response ${response.body}');
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         String status = jsonData['data']['status'];
+        await _cacheSubscriptionStatus(status);
         _subscriptionStatusController.add(status);
-        print('Subscription status retrieved: $status');
         return status;
       } else {
         String cachedStatus = await _getCachedSubscriptionStatus();
-        print(
-            'Failed to fetch subscription status. Using cached status: $cachedStatus');
         _subscriptionStatusController.add(cachedStatus);
         return cachedStatus;
       }
     } on PlatformException catch (e) {
-      print('PlatformException: ${e.message}');
       String cachedStatus = await _getCachedSubscriptionStatus();
-      print('Using cached status due to PlatformException: $cachedStatus');
       _subscriptionStatusController.add(cachedStatus);
       return cachedStatus;
     } catch (e) {
-      print('Unexpected error: $e');
       String cachedStatus = await _getCachedSubscriptionStatus();
-      print('Using cached status due to unexpected error: $cachedStatus');
       _subscriptionStatusController.add(cachedStatus);
       return cachedStatus;
     }
   }
 
+  Future<void> _cacheSubscriptionStatus(String status) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(subscriptionStatusKey, status);
+  }
+
   Future<String> _getCachedSubscriptionStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString(subscriptionStatusKey) ?? 'NONE';
+    String cachedStatus = prefs.getString(subscriptionStatusKey) ?? 'NONE';
+
+    return cachedStatus;
   }
 
   void startSubscriptionCheck(Duration interval) {
