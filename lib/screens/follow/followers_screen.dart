@@ -7,6 +7,7 @@ import 'package:meachou/components/loading/loading_dots.dart';
 import 'package:meachou/screens/follow/following_widgets.dart';
 import 'package:meachou/screens/follow/search_and_filter_widget.dart';
 import 'package:meachou/screens/follow/followers_widget.dart';
+import 'package:meachou/services/auth_service.dart';
 import 'dart:async';
 
 class FollowersScreen extends StatefulWidget {
@@ -16,11 +17,13 @@ class FollowersScreen extends StatefulWidget {
 
 class _FollowersScreenState extends State<FollowersScreen> {
   final FollowsService followService = FollowsService();
+  final AuthService authService = AuthService();
   List<Map<String, dynamic>>? followingStores;
   List<Map<String, dynamic>>? followersStores;
   bool isLoadingFollowing = true;
   bool isLoadingFollowers = true;
   bool isSearching = false;
+  bool canViewFollowers = false;
   int totalFollowing = 0;
   int totalFollowers = 0;
   int currentIndex = 1;
@@ -40,6 +43,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
     _fetchInitialData();
     _searchController.addListener(_onSearchChanged);
     _followersSearchController.addListener(_onFollowersSearchChanged);
+    _checkUserSubscription();
   }
 
   @override
@@ -261,6 +265,17 @@ class _FollowersScreenState extends State<FollowersScreen> {
     _followersSearchController.clear();
   }
 
+  Future<void> _checkUserSubscription() async {
+    final user = await authService.getUser();
+    if (user != null &&
+        user['store'] != null &&
+        user['store']['subscription'] != null) {
+      setState(() {
+        canViewFollowers = user['store']['subscription']['status'] == 'ACTIVE';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -329,43 +344,45 @@ class _FollowersScreenState extends State<FollowersScreen> {
                               ],
                             ),
                           ),
-                          buildDivider(),
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                currentIndex = 0;
-                                _fetchFollowersStores(clearFilters: true);
-                                _clearSearchFields();
-                              });
-                            },
-                            child: Column(
-                              children: [
-                                Text(
-                                  '$totalFollowers',
-                                  style: GoogleFonts.lato(
-                                    textStyle: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
+                          if (totalFollowing > 0 && totalFollowers > 0)
+                            buildDivider(),
+                          if (canViewFollowers)
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  currentIndex = 0;
+                                  _fetchFollowersStores(clearFilters: true);
+                                  _clearSearchFields();
+                                });
+                              },
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '$totalFollowers',
+                                    style: GoogleFonts.lato(
+                                      textStyle: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  'Seguidores',
-                                  style: GoogleFonts.lato(
-                                    textStyle: TextStyle(
-                                      color: currentIndex == 0
-                                          ? Colors.blueAccent
-                                          : Colors.black,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
+                                  Text(
+                                    'Seguidores',
+                                    style: GoogleFonts.lato(
+                                      textStyle: TextStyle(
+                                        color: currentIndex == 0
+                                            ? Colors.blueAccent
+                                            : Colors.black,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                buildIndicator(currentIndex == 0),
-                              ],
+                                  buildIndicator(currentIndex == 0),
+                                ],
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
@@ -385,7 +402,7 @@ class _FollowersScreenState extends State<FollowersScreen> {
                         isSearching: isSearching,
                       ),
                     ),
-                  if (currentIndex == 0)
+                  if (currentIndex == 0 && canViewFollowers)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: FollowersSearchWidget(

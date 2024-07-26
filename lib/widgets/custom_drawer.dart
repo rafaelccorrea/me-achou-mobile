@@ -32,8 +32,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     _subscriptionClient =
         Provider.of<SubscriptionClient>(context, listen: false);
 
-    // Start checking subscription status periodically
-    _subscriptionClient.startSubscriptionCheck(Duration(minutes: 5));
+    _subscriptionClient.startSubscriptionCheck(const Duration(minutes: 120));
   }
 
   @override
