@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meachou/screens/follow/followers_screen.dart';
 import 'package:meachou/screens/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:meachou/services/subscription_client.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomDrawer extends StatefulWidget {
   final bool isOpen;
@@ -25,6 +25,9 @@ class CustomDrawer extends StatefulWidget {
 
 class _CustomDrawerState extends State<CustomDrawer> {
   late final SubscriptionClient _subscriptionClient;
+  final ValueNotifier<String?> _subscriptionStatusNotifier =
+      ValueNotifier<String?>('NONE');
+  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
 
   @override
   void initState() {
@@ -32,7 +35,42 @@ class _CustomDrawerState extends State<CustomDrawer> {
     _subscriptionClient =
         Provider.of<SubscriptionClient>(context, listen: false);
 
-    _subscriptionClient.startSubscriptionCheck(const Duration(minutes: 120));
+    _subscriptionClient.subscriptionStatusStream.listen((status) {
+      _updateSubscriptionStatus(status);
+    });
+
+    _loadInitialSubscriptionStatus();
+  }
+
+  Future<void> _loadInitialSubscriptionStatus() async {
+    String? cachedStatus =
+        await secureStorage.read(key: SubscriptionClient.subscriptionStatusKey);
+    if (cachedStatus != null) {
+      _subscriptionStatusNotifier.value = cachedStatus;
+    } else {
+      AuthService authService =
+          Provider.of<AuthService>(context, listen: false);
+      authService.getUser().then((userData) {
+        if (userData != null &&
+            userData['store'] != null &&
+            userData['store']['subscription'] != null) {
+          _updateSubscriptionStatus(
+              userData['store']['subscription']['status']);
+        } else {
+          _updateSubscriptionStatus('NONE');
+        }
+      });
+    }
+  }
+
+  Future<void> _updateSubscriptionStatus(String? status) async {
+    if (status != null) {
+      await secureStorage.write(
+          key: SubscriptionClient.subscriptionStatusKey, value: status);
+    } else {
+      await secureStorage.delete(key: SubscriptionClient.subscriptionStatusKey);
+    }
+    _subscriptionStatusNotifier.value = status;
   }
 
   @override
@@ -50,12 +88,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     child: Text('Erro ao carregar informações do usuário')),
               );
             } else {
-              return StreamBuilder<String>(
-                stream: _subscriptionClient.subscriptionStatusStream,
-                initialData: 'NONE',
-                builder: (context, subscriptionSnapshot) {
-                  final subscriptionStatus =
-                      subscriptionSnapshot.data ?? 'NONE';
+              return ValueListenableBuilder<String?>(
+                valueListenable: _subscriptionStatusNotifier,
+                builder: (context, subscriptionStatus, child) {
                   return Drawer(
                     child: Container(
                       color: Colors.white,
@@ -211,6 +246,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   Widget _buildStoreSection(String? subscriptionStatus) {
+    print('############### $subscriptionStatus');
     if (subscriptionStatus == 'ACTIVE') {
       return _buildExpansionTileForActiveSubscription(context);
     } else if (subscriptionStatus == 'INACTIVE') {

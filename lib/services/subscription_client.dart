@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meachou/constants/api_constants.dart';
 import 'package:meachou/services/api_client.dart';
 import 'dart:convert';
@@ -8,6 +8,7 @@ import 'dart:async';
 class SubscriptionClient {
   final ApiClient apiClient = ApiClient();
   static const String subscriptionStatusKey = 'subscription_status';
+  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
   final StreamController<String> _subscriptionStatusController =
       StreamController<String>.broadcast();
   Timer? _timer;
@@ -48,14 +49,13 @@ class SubscriptionClient {
   }
 
   Future<void> _cacheSubscriptionStatus(String status) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(subscriptionStatusKey, status);
+    await secureStorage.write(key: subscriptionStatusKey, value: status);
     print('Cached subscription status: $status');
   }
 
   Future<String> _getCachedSubscriptionStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String cachedStatus = prefs.getString(subscriptionStatusKey) ?? 'NONE';
+    String? cachedStatus = await secureStorage.read(key: subscriptionStatusKey);
+    cachedStatus ??= 'NONE';
     print('Retrieved cached subscription status: $cachedStatus');
     return cachedStatus;
   }
