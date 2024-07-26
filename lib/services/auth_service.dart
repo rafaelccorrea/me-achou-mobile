@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meachou/constants/api_constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
@@ -107,6 +108,9 @@ class AuthService {
     await secureStorage.delete(key: 'refreshToken');
     await secureStorage.delete(key: 'user');
     await secureStorage.delete(key: 'hasStore');
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('subscription_status');
   }
 
   Future<void> refreshToken() async {

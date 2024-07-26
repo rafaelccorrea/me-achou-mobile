@@ -2,7 +2,6 @@ import 'package:meachou/constants/api_constants.dart';
 import 'package:meachou/services/api_client.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class FollowsService {
   final ApiClient apiClient = ApiClient();
@@ -52,8 +51,8 @@ class FollowsService {
       if (name != null) 'user_name': name,
     });
 
-    final response = await http.get(
-      uri,
+    final response = await apiClient.get(
+      uri.toString(),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -76,8 +75,8 @@ class FollowsService {
     final endpoint =
         ApiConstants.followStoreEndpoint.replaceFirst(':storeId', storeId);
 
-    final response = await http.post(
-      Uri.parse(endpoint),
+    final response = await apiClient.post(
+      endpoint,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -94,8 +93,8 @@ class FollowsService {
     final endpoint =
         ApiConstants.unfollowStoreEndpoint.replaceFirst(':storeId', storeId);
 
-    final response = await http.delete(
-      Uri.parse(endpoint),
+    final response = await apiClient.delete(
+      endpoint,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
