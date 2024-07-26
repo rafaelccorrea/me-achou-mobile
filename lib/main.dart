@@ -8,6 +8,7 @@ import 'package:meachou/screens/signup_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/providers/app_drawer_provider.dart';
 import 'package:meachou/services/auth_service.dart';
+import 'package:meachou/services/subscription_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => DrawerProvider()),
         Provider<AuthService>(create: (_) => AuthService()),
+        Provider<SubscriptionClient>(create: (_) => SubscriptionClient()),
       ],
       child: MeAchou(),
     ),
