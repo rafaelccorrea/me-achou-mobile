@@ -27,6 +27,10 @@ void main() async {
 class MeAchou extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final subscriptionClient =
+        Provider.of<SubscriptionClient>(context, listen: false);
+    subscriptionClient.startSubscriptionCheck(const Duration(minutes: 1));
+
     return MaterialApp(
       home: HomeScreen(),
       debugShowCheckedModeBanner: false,

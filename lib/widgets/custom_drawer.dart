@@ -89,7 +89,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Drawer(
+              return const Drawer(
                 child: Center(
                     child: Text('Erro ao carregar informações do usuário')),
               );
@@ -128,7 +128,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                           : Colors.red,
                                       size: 20,
                                     ),
-                                    SizedBox(width: 4),
+                                    const SizedBox(width: 4),
                                     Text(
                                       subscriptionStatus == 'ACTIVE'
                                           ? 'Ativa'
