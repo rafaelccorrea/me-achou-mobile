@@ -73,10 +73,4 @@ class SubscriptionClient {
       await checkSubscription();
     });
   }
-
-  void dispose() {
-    _timer?.cancel();
-    _subscriptionStatusController.close();
-    print('Disposed SubscriptionClient');
-  }
 }

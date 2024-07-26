@@ -74,12 +74,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   @override
-  void dispose() {
-    _subscriptionClient.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Consumer<AuthService>(
       builder: (context, authService, child) {
