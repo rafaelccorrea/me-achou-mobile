@@ -29,7 +29,7 @@ class MeAchou extends StatelessWidget {
   Widget build(BuildContext context) {
     final subscriptionClient =
         Provider.of<SubscriptionClient>(context, listen: false);
-    subscriptionClient.startSubscriptionCheck(const Duration(minutes: 1));
+    subscriptionClient.startSubscriptionCheck(const Duration(minutes: 500));
 
     return MaterialApp(
       home: HomeScreen(),
