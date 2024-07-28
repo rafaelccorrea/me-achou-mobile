@@ -227,9 +227,10 @@ class _SettingsScreenState extends State<SettingsScreen>
         await _authService.logout();
 
         if (!mounted) return;
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (Route<dynamic> route) => false,
         );
       } else {
         final errorMessage =
@@ -256,9 +257,10 @@ class _SettingsScreenState extends State<SettingsScreen>
     try {
       await _authService.logout();
       if (!mounted) return;
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (Route<dynamic> route) => false,
       );
     } catch (error) {
       _showErrorToast(error.toString());
