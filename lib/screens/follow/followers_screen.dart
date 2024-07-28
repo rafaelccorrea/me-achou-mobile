@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:meachou/screens/follow/followers_search_widgets.dart';
+import 'package:meachou/screens/follow/widgets/followers_search_widgets.dart';
 import 'package:meachou/services/follow_store.dart';
 import 'package:meachou/components/loading/loading_dots.dart';
-import 'package:meachou/screens/follow/following_widgets.dart';
-import 'package:meachou/screens/follow/search_and_filter_widget.dart';
-import 'package:meachou/screens/follow/followers_widget.dart';
+import 'package:meachou/screens/follow/widgets/following_widgets.dart';
+import 'package:meachou/screens/follow/widgets/search_and_filter_widget.dart';
+import 'package:meachou/screens/follow/widgets/followers_widget.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'dart:async';
 
