@@ -135,7 +135,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             )
           : Center(
               child: Container(
-                constraints: BoxConstraints.expand(),
+                constraints: const BoxConstraints.expand(),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Colors.blueAccent, Colors.lightBlueAccent],
@@ -151,17 +151,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const SizedBox(height: 160),
-                        const Text(
-                          'Me Achou',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        Center(
+                          child: ColorFiltered(
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
+                            ),
+                            child: Image.asset(
+                              'assets/finder-logo.png',
+                              height: 200,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 50),
                         Text(
                           'Tempo restante para redefinição: $minutes:${seconds.toString().padLeft(2, '0')}',
                           style: const TextStyle(
