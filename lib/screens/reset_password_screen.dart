@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:meachou/services/user_service.dart';
+import 'package:meachou/components/loading/loading_dots.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -131,7 +132,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       backgroundColor: Colors.blueAccent,
       body: isLoading
           ? const Center(
-              child: CircularProgressIndicator(),
+              child:
+                  LoadingDots(), // Replace CircularProgressIndicator with LoadingDots
             )
           : Center(
               child: Container(

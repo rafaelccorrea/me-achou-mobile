@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:meachou/screens/reset_password_screen.dart';
 import 'package:meachou/services/user_service.dart';
+import 'package:meachou/components/loading/loading_dots.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({Key? key});
@@ -133,14 +134,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
               child: isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.blueAccent),
-                      ),
-                    )
+                  ? const LoadingDots()
                   : const Text(
                       'Enviar',
                       style: TextStyle(fontSize: 18),

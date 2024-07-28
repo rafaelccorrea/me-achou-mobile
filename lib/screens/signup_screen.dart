@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:meachou/screens/login_screen.dart';
 import 'package:meachou/services/user_service.dart';
+import 'package:meachou/components/loading/loading_dots.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -166,14 +167,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.blueAccent),
-                          ),
-                        )
+                      ? const LoadingDots()
                       : const Text(
                           'Cadastre-se',
                           style: TextStyle(fontSize: 18),
