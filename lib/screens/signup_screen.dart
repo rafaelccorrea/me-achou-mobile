@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart'; // Importe o pacote fluttertoast
-import 'package:meachou/screens/login_screen.dart'; // Importe a tela de login
-import 'package:meachou/services/user_service.dart'; // Importe o serviço de usuário
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:meachou/screens/login_screen.dart';
+import 'package:meachou/services/user_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -15,9 +15,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final UserService _userService =
-      UserService(); // Instância do serviço de usuário
-  bool _isLoading = false; // Estado para controlar o indicador de carregamento
+  final UserService _userService = UserService();
+  bool _isLoading = false;
 
   void _signUp() async {
     if (_isLoading) return;
@@ -36,7 +35,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       final response =
           await _userService.createUserEndpoint(name, email, password);
       if (response.statusCode == 201) {
-        // Usuário cadastrado com sucesso
         Fluttertoast.showToast(
           msg: 'Usuário cadastrado com sucesso',
           toastLength: Toast.LENGTH_SHORT,
@@ -45,13 +43,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
           textColor: Colors.white,
         );
 
-        // Navega para a tela de login após o cadastro
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       } else {
-        // Tratar outros códigos de status como erro
         final Map<String, dynamic> responseBody = json.decode(response.body);
         String errorMessage =
             responseBody['error'] ?? 'Erro ao cadastrar usuário';
@@ -64,7 +60,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
       }
     } catch (e) {
-      // Caso ocorra um erro ao cadastrar o usuário
       Fluttertoast.showToast(
         msg: 'Erro ao cadastrar usuário: $e',
         toastLength: Toast.LENGTH_SHORT,
@@ -98,17 +93,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 50),
-                const Text(
-                  'Me Achou',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                Center(
+                  child: ColorFiltered(
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
+                    child: Image.asset(
+                      'assets/finder-logo.png',
+                      height: 200,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 50),
                 TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
@@ -170,7 +166,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   child: _isLoading
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
@@ -186,7 +182,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 20),
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context); // Volta para a tela de login
+                    Navigator.pop(context);
                   },
                   child: const Text(
                     'Já tem uma conta? Conecte-se',

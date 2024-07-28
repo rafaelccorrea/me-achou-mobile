@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
   bool _loading = false;
-  bool _obscureText = true; // Controla a visibilidade da senha
+  bool _obscureText = true;
 
   void _showLoading() {
     setState(() {
@@ -82,17 +82,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 50),
-                  const Text(
-                    'Me achou',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                  Center(
+                    child: ColorFiltered(
+                      colorFilter: const ColorFilter.mode(
+                        Colors.white,
+                        BlendMode.srcIn,
+                      ),
+                      child: Image.asset(
+                        'assets/finder-logo.png',
+                        height: 200,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 50),
                   TextFormField(
                     controller: _emailController,
                     decoration: InputDecoration(

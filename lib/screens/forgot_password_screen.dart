@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:meachou/screens/reset_password-screen.dart';
+import 'package:meachou/screens/reset_password_screen.dart';
 import 'package:meachou/services/user_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -88,17 +88,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 50),
-            const Text(
-              'Me Achou',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            Center(
+              child: ColorFiltered(
+                colorFilter: const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                ),
+                child: Image.asset(
+                  'assets/finder-logo.png',
+                  height: 200,
+                ),
               ),
             ),
-            const SizedBox(height: 50),
             TextField(
               onChanged: (value) {
                 setState(() {

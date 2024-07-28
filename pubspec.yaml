@@ -36,7 +36,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/default_avatar.png
-    - assets/logo.png
+    - assets/finder-logo.png
     - assets/background_image.jpg
     - assets/no_stores.png
 
