@@ -26,6 +26,7 @@ dependencies:
   flutter_typeahead: ^4.0.0
   diacritic: ^0.1.1
   shared_preferences: ^2.2.3
+  local_auth: ^2.2.0
 
 dev_dependencies:
   flutter_test:
