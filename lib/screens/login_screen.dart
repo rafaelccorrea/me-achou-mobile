@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
   final LocalAuthentication auth = LocalAuthentication();
-  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   bool _loading = false;
   bool _obscureText = true;
   bool _canCheckBiometrics = false;
@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.fingerprint, color: Colors.blueAccent),
             SizedBox(width: 10),
@@ -78,18 +78,18 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ],
         ),
-        content: Text(
+        content: const Text(
           'Deseja usar a biometria para login?',
           style: TextStyle(color: Colors.black87),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Não', style: TextStyle(color: Colors.red)),
+            child: const Text('Não', style: TextStyle(color: Colors.red)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Sim', style: TextStyle(color: Colors.green)),
+            child: const Text('Sim', style: TextStyle(color: Colors.green)),
           ),
         ],
       ),
@@ -278,6 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    SizedBox(height: _isBiometricEnabled ? 5 : 75),
                     Center(
                       child: ColorFiltered(
                         colorFilter: const ColorFilter.mode(
@@ -316,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _passwordController,
                       decoration: InputDecoration(
@@ -368,7 +369,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(fontSize: 18),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(
+                        height: _canCheckBiometrics &&
+                                _isBiometricEnabled &&
+                                _biometricLoading
+                            ? 80
+                            : 20),
                     if (_canCheckBiometrics &&
                         _isBiometricEnabled &&
                         !_biometricLoading) ...[
