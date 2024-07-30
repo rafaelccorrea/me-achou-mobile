@@ -22,6 +22,7 @@ class EventCarousel extends StatelessWidget {
               '${DateFormat('dd MMMM', 'pt_BR').format(startDate)} - ${DateFormat('dd MMMM', 'pt_BR').format(endDate)}';
 
           return AlertDialog(
+            backgroundColor: Colors.white,
             title: Text(
               event['title'],
               style: const TextStyle(
@@ -55,9 +56,11 @@ class EventCarousel extends StatelessWidget {
                         ),
                       ),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10.0),
-                      child: Image.network(event['image']),
+                    child: Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0),
+                        child: Image.network(event['image']),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16.0),
