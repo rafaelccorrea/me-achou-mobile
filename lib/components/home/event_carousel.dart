@@ -111,61 +111,77 @@ class EventCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 130,
-      child: CarouselSlider.builder(
-        itemCount: events.length,
-        itemBuilder: (context, index, realIdx) {
-          final event = events[index];
-          final truncatedTitle = event['title'].length > 20
-              ? '${event['title'].substring(0, 20)}...'
-              : event['title'];
-
-          return GestureDetector(
-            onTap: () => showEventDetails(context, event),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [Colors.blue, Colors.green, Colors.white],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundImage: NetworkImage(event['image']),
-                  ),
-                ),
-                const SizedBox(height: 5.0),
-                Flexible(
-                  child: Text(
-                    truncatedTitle,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-        options: CarouselOptions(
-          height: 200,
-          autoPlay: true,
-          enlargeCenterPage: true,
-          aspectRatio: 1.0,
-          viewportFraction: 0.3,
-          enableInfiniteScroll: events.length > 2,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Eventos',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ),
+        const SizedBox(
+            height:
+                10.0), // Adiciona um pequeno espaço entre o título e o carrossel
+        Container(
+          height: 130,
+          child: CarouselSlider.builder(
+            itemCount: events.length,
+            itemBuilder: (context, index, realIdx) {
+              final event = events[index];
+              final truncatedTitle = event['title'].length > 20
+                  ? '${event['title'].substring(0, 20)}...'
+                  : event['title'];
+
+              return GestureDetector(
+                onTap: () => showEventDetails(context, event),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Colors.blue, Colors.white],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 40,
+                        backgroundImage: NetworkImage(event['image']),
+                      ),
+                    ),
+                    const SizedBox(height: 5.0),
+                    Flexible(
+                      child: Text(
+                        truncatedTitle,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            options: CarouselOptions(
+              height: 200,
+              autoPlay: true,
+              enlargeCenterPage: true,
+              aspectRatio: 1.0,
+              viewportFraction: 0.3,
+              enableInfiniteScroll: events.length > 2,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

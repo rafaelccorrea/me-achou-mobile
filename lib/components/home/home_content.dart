@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -360,9 +359,10 @@ class _HomeContentState extends State<HomeContent>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Necessary for AutomaticKeepAliveClientMixin
+    super.build(context);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         controller: _scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 16),

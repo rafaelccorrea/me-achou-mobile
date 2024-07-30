@@ -24,8 +24,12 @@ class StoreList extends StatelessWidget {
       children: [
         if (stores.isNotEmpty)
           const Text(
-            'Lojas cadastradas',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            'Lojas',
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         if (stores.isNotEmpty) const SizedBox(height: 10),
         if (stores.isEmpty)

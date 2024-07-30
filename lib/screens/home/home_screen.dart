@@ -6,7 +6,7 @@ import 'package:meachou/widgets/custom_drawer.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/components/custom_app_bar.dart';
 import 'package:meachou/components/custom_bottom_navigation_bar.dart';
-import 'package:meachou/components/home_content.dart';
+import 'package:meachou/components/home/home_content.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:meachou/screens/login_screen.dart';
 
