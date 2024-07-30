@@ -18,8 +18,10 @@ class EventCarousel extends StatelessWidget {
               DateFormat('dd-MM-yyyy', 'pt_BR').parse(event['start_date']);
           final endDate =
               DateFormat('dd-MM-yyyy', 'pt_BR').parse(event['end_date']);
-          final dateRange =
-              '${DateFormat('dd MMMM', 'pt_BR').format(startDate)} - ${DateFormat('dd MMMM', 'pt_BR').format(endDate)}';
+          final formattedStartDate =
+              DateFormat('dd MMMM yyyy', 'pt_BR').format(startDate);
+          final formattedEndDate =
+              DateFormat('dd MMMM yyyy', 'pt_BR').format(endDate);
 
           return AlertDialog(
             backgroundColor: Colors.white,
@@ -64,12 +66,32 @@ class EventCarousel extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16.0),
-                  Text(
-                    'Data: $dateRange',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                  Row(
+                    children: [
+                      const Icon(Icons.event, color: Colors.blueAccent),
+                      const SizedBox(width: 8.0),
+                      Text(
+                        'Início: $formattedStartDate',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8.0),
+                  Row(
+                    children: [
+                      const Icon(Icons.event, color: Colors.blueAccent),
+                      const SizedBox(width: 8.0),
+                      Text(
+                        'Fim: $formattedEndDate',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16.0),
                   const Text(
