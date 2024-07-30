@@ -43,7 +43,6 @@ class FollowsService {
     required int limit,
     String? name,
   }) async {
-    final token = await authService.getAccessToken();
     final uri =
         Uri.parse(ApiConstants.getFollowersEndpoint).replace(queryParameters: {
       'page': page.toString(),
@@ -51,13 +50,7 @@ class FollowsService {
       if (name != null) 'user_name': name,
     });
 
-    final response = await apiClient.get(
-      uri.toString(),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
+    final response = await apiClient.get(uri.toString());
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -71,35 +64,20 @@ class FollowsService {
   }
 
   Future<void> followStore(String storeId) async {
-    final token = await authService.getAccessToken();
     final endpoint =
         ApiConstants.followStoreEndpoint.replaceFirst(':storeId', storeId);
 
-    final response = await apiClient.post(
-      endpoint,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
+    final response = await apiClient.post(endpoint, body: {});
     if (response.statusCode != 201) {
       throw Exception('Failed to follow store');
     }
   }
 
   Future<void> unfollowStore(String storeId) async {
-    final token = await authService.getAccessToken();
     final endpoint =
         ApiConstants.unfollowStoreEndpoint.replaceFirst(':storeId', storeId);
 
-    final response = await apiClient.delete(
-      endpoint,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
+    final response = await apiClient.delete(endpoint);
 
     if (response.statusCode != 200) {
       throw Exception('Failed to unfollow store');

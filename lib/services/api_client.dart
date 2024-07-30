@@ -21,7 +21,6 @@ class ApiClient {
             'Usuário deslogado devido a falhas consecutivas de autenticação.');
       }
 
-      print("Token expirado, tentando atualizar o token...");
       await authService.refreshToken();
       final retryResponse = await request();
 
