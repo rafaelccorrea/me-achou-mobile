@@ -89,11 +89,11 @@ class StoreList extends StatelessWidget {
       minBlastForce: 5,
       gravity: 0.1,
       colors: const [
-        Colors.red,
-        Colors.orange,
-        Colors.yellow,
-        Colors.blue,
-        Colors.green
+        Color(0xFF4285F4),
+        Color(0xFF4285F4),
+        Color(0xFFFFFFFF),
+        Color(0xFFFFFFFF),
+        Color(0xFFB0C4DE),
       ],
       shouldLoop: false,
       particleDrag: 0.05,

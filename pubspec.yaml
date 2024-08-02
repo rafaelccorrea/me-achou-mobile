@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   google_fonts: ^6.2.1
+  step_progress_indicator: ^1.0.2
   font_awesome_flutter: ^10.1.0
   cupertino_icons: ^1.0.6
   flutter_dotenv: ^5.1.0
@@ -27,6 +28,8 @@ dependencies:
   diacritic: ^0.1.1
   shared_preferences: ^2.2.3
   local_auth: ^2.2.0
+  image_picker: ^1.1.2
+  flutter_masked_text2: ^0.9.1
 
 dev_dependencies:
   flutter_test:

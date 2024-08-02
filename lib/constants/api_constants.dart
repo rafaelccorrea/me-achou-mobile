@@ -25,4 +25,7 @@ class ApiConstants {
   static String get getFollowersEndpoint => '$baseUrl/follow-store/followers';
   static String get getDetailsSubscriptionEndpoint =>
       '$baseUrl/subscription/details';
+  static String get createStoreEndpoint => '$baseUrl/stores';
+  static String get uploadProfileImageEndpoint =>
+      '$baseUrl/stores/profile-picture';
 }

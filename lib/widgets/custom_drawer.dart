@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meachou/screens/follow/followers_screen.dart';
 import 'package:meachou/screens/profile_screen.dart';
+import 'package:meachou/screens/store/create_store_screen.dart'; // Importar a tela de criação de loja
 import 'package:provider/provider.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:meachou/services/subscription_client.dart';
@@ -173,7 +174,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                       icon: Icons.store,
                                       text: 'Criar Loja',
                                       onTap: () {
-                                        // Implementar lógica para criar loja
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                CreateStoreScreen(),
+                                          ),
+                                        );
                                       },
                                     ),
                                 ],

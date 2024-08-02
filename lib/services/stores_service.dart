@@ -1,6 +1,7 @@
 import 'package:meachou/constants/api_constants.dart';
 import 'package:meachou/services/api_client.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class StoreService {
@@ -56,5 +57,57 @@ class StoreService {
     } else {
       throw Exception('Failed to load store details');
     }
+  }
+
+  Future<http.Response> createStore(Map<String, dynamic> storeData) async {
+    final uri = Uri.parse(ApiConstants.createStoreEndpoint);
+    final request = http.MultipartRequest('POST', uri);
+
+    request.fields['company_name'] = storeData['company_name'];
+    request.fields['business_sector'] = storeData['business_sector'];
+    request.fields['whatsapp_phone'] = storeData['whatsapp_phone'];
+    request.fields['service_values'] = storeData['service_values'].toString();
+    request.fields['email'] = storeData['email'];
+
+    if (storeData.containsKey('about')) {
+      request.fields['about'] = storeData['about'] ?? '';
+    }
+    if (storeData.containsKey('contact_phone')) {
+      request.fields['contact_phone'] = storeData['contact_phone'] ?? '';
+    }
+    if (storeData.containsKey('delivery')) {
+      request.fields['delivery'] = storeData['delivery'].toString();
+    }
+    if (storeData.containsKey('in_home_service')) {
+      request.fields['in_home_service'] =
+          storeData['in_home_service'].toString();
+    }
+    if (storeData.containsKey('working_hours')) {
+      request.fields['working_hours'] = storeData['working_hours'] ?? '';
+    }
+    if (storeData.containsKey('website')) {
+      request.fields['website'] = storeData['website'] ?? '';
+    }
+    if (storeData.containsKey('social_networks')) {
+      request.fields['social_networks'] =
+          json.encode(storeData['social_networks'] ?? {});
+    }
+    if (storeData.containsKey('photos')) {
+      List<File> photos = List<File>.from(storeData['photos']);
+      for (var photo in photos) {
+        request.files
+            .add(await http.MultipartFile.fromPath('photos', photo.path));
+      }
+    }
+    if (storeData.containsKey('address')) {
+      request.fields['address'] = json.encode(storeData['address']);
+    }
+
+    return await apiClient.sendMultipartRequest(request);
+  }
+
+  Future<http.StreamedResponse> uploadProfileImage(File image) async {
+    final uri = Uri.parse(ApiConstants.uploadProfileImageEndpoint);
+    return await apiClient.uploadFile(uri.toString(), image);
   }
 }

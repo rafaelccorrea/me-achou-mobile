@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meachou/services/auth_service.dart';
@@ -53,8 +53,8 @@ class ApiClient {
       if (token != null) 'Authorization': 'Bearer $token',
       if (headers != null) ...headers,
     };
-    return sendRequest(() => http.post(Uri.parse(url),
-        headers: newHeaders, body: json.encode(body)));
+    return sendRequest(
+        () => http.post(Uri.parse(url), headers: newHeaders, body: body));
   }
 
   Future<http.Response> put(String url,
@@ -65,8 +65,8 @@ class ApiClient {
       if (token != null) 'Authorization': 'Bearer $token',
       if (headers != null) ...headers,
     };
-    return sendRequest(() =>
-        http.put(Uri.parse(url), headers: newHeaders, body: json.encode(body)));
+    return sendRequest(
+        () => http.put(Uri.parse(url), headers: newHeaders, body: body));
   }
 
   Future<http.Response> delete(String url,
@@ -78,5 +78,30 @@ class ApiClient {
       if (headers != null) ...headers,
     };
     return sendRequest(() => http.delete(Uri.parse(url), headers: newHeaders));
+  }
+
+  Future<http.StreamedResponse> uploadFile(String url, File file,
+      {Map<String, String>? headers}) async {
+    final String? token = await authService.getAccessToken();
+    final newHeaders = {
+      if (token != null) 'Authorization': 'Bearer $token',
+      if (headers != null) ...headers,
+    };
+
+    final request = http.MultipartRequest('POST', Uri.parse(url));
+    request.files.add(await http.MultipartFile.fromPath('file', file.path));
+    request.headers.addAll(newHeaders);
+
+    return request.send();
+  }
+
+  Future<http.Response> sendMultipartRequest(
+      http.MultipartRequest request) async {
+    final String? token = await authService.getAccessToken();
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+    final streamedResponse = await request.send();
+    return http.Response.fromStream(streamedResponse);
   }
 }
