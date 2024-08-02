@@ -35,9 +35,7 @@ class SubscriptionClient {
         _addStatusToController(status);
         return status;
       } else {
-        print(
-            'Failed to fetch subscription status, status code: ${response.statusCode}');
-        return await _handleError();
+        return await _handleErrorResponse(response);
       }
     } on PlatformException catch (e) {
       print('PlatformException occurred: $e');
@@ -66,6 +64,20 @@ class SubscriptionClient {
     return cachedStatus;
   }
 
+  Future<String> _handleErrorResponse(response) async {
+    final errorData = json.decode(response.body);
+    String errorMessage;
+    if (errorData['data'] != null && errorData['data']['errors'] != null) {
+      errorMessage = errorData['data']['errors']
+          .map((error) => error['description'])
+          .join(', ');
+    } else {
+      errorMessage = 'Erro desconhecido';
+    }
+    print('Failed to fetch subscription status: $errorMessage');
+    return await _handleError();
+  }
+
   void _addStatusToController(String status) {
     if (!_isClosed && !_subscriptionStatusController.isClosed) {
       _subscriptionStatusController.add(status);
@@ -81,13 +93,8 @@ class SubscriptionClient {
     });
   }
 
-  Future<Map<String, dynamic>> createSubscription(
-      String cpfCnpj,
-      String holderName,
-      String number,
-      String expiryMonth,
-      String expiryYear,
-      String ccv) async {
+  Future createSubscription(String cpfCnpj, String holderName, String number,
+      String expiryMonth, String expiryYear, String ccv) async {
     try {
       final uri = Uri.parse(ApiConstants.createSubscriptionEndpoint);
       final response = await apiClient.post(
@@ -105,7 +112,7 @@ class SubscriptionClient {
           }
         }),
       );
-
+      print("#########################3 ${response.body}");
       if (response.statusCode == 201) {
         final jsonData = json.decode(response.body);
 
@@ -114,10 +121,7 @@ class SubscriptionClient {
 
         return jsonData;
       } else {
-        final errorData = json.decode(response.body);
-        String errorMessage =
-            errorData['message']?.join(', ') ?? 'Erro desconhecido';
-        throw Exception(errorMessage);
+        return await _handleErrorResponse(response);
       }
     } catch (e) {
       print('Exception occurred: $e');
