@@ -600,6 +600,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
         titleTextStyle: const TextStyle(color: Colors.white),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Form(
