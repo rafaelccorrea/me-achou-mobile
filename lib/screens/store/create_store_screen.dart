@@ -141,7 +141,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
           );
         }
 
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => SubscriptionScreen()),
         );
