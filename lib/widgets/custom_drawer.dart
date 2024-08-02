@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meachou/screens/follow/followers_screen.dart';
 import 'package:meachou/screens/profile_screen.dart';
-import 'package:meachou/screens/store/create_store_screen.dart'; // Importar a tela de criação de loja
+import 'package:meachou/screens/store/create_store_screen.dart';
+import 'package:meachou/screens/store/subscription_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:meachou/services/subscription_client.dart';
@@ -292,7 +293,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
         _buildDrawerSubItem(context, icon: Icons.campaign, text: 'Campanhas'),
         _buildDrawerSubItem(context, icon: Icons.event, text: 'Eventos'),
         _buildDrawerSubItem(context,
-            icon: Icons.subscriptions, text: 'Assinatura'),
+            icon: Icons.subscriptions,
+            text: 'Assinatura',
+            onTap: () => _navigateTo(context, SubscriptionScreen())),
         _buildDrawerSubItem(context, icon: Icons.payment, text: 'Cobranças'),
         _buildDrawerSubItem(context, icon: Icons.receipt, text: 'Faturas'),
       ],
@@ -308,7 +311,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
         _buildDrawerSubItem(context,
             icon: Icons.person_outline, text: 'Perfil'),
         _buildDrawerSubItem(context,
-            icon: Icons.subscriptions, text: 'Assinatura'),
+            icon: Icons.subscriptions,
+            text: 'Assinatura',
+            onTap: () => _navigateTo(context, SubscriptionScreen())),
         _buildDrawerSubItem(context, icon: Icons.payment, text: 'Cobranças'),
         _buildDrawerSubItem(context, icon: Icons.receipt, text: 'Faturas'),
       ],
@@ -324,7 +329,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
         _buildDrawerSubItem(context,
             icon: Icons.person_outline, text: 'Perfil'),
         _buildDrawerSubItem(context,
-            icon: Icons.subscriptions, text: 'Criar Assinatura'),
+            icon: Icons.subscriptions,
+            text: 'Criar Assinatura',
+            onTap: () => _navigateTo(context, SubscriptionScreen())),
       ],
     );
   }

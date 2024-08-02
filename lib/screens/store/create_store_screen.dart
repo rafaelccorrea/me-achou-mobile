@@ -112,8 +112,6 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
 
       final response = await _storeService.createStore(storeData);
 
-      print('***************************** ${response.body}');
-
       if (response.statusCode == 201) {
         if (_profileImage != null) {
           try {
