@@ -81,6 +81,50 @@ class SubscriptionClient {
     });
   }
 
+  Future<Map<String, dynamic>> createSubscription(
+      String cpfCnpj,
+      String holderName,
+      String number,
+      String expiryMonth,
+      String expiryYear,
+      String ccv) async {
+    try {
+      final uri = Uri.parse(ApiConstants.createSubscriptionEndpoint);
+      final response = await apiClient.post(
+        uri.toString(),
+        body: json.encode({
+          "subscription": {
+            "cpfCnpj": cpfCnpj,
+            "creditCard": {
+              "holderName": holderName,
+              "number": number,
+              "expiryMonth": expiryMonth,
+              "expiryYear": expiryYear,
+              "ccv": ccv
+            }
+          }
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        final jsonData = json.decode(response.body);
+
+        // Atualiza o status da assinatura após criar a assinatura
+        await checkSubscription();
+
+        return jsonData;
+      } else {
+        final errorData = json.decode(response.body);
+        String errorMessage =
+            errorData['message']?.join(', ') ?? 'Erro desconhecido';
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      print('Exception occurred: $e');
+      throw e;
+    }
+  }
+
   void close() {
     _isClosed = true;
     _subscriptionStatusController.close();

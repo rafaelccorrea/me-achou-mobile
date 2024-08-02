@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meachou/components/loading/loading_dots.dart';
-import 'package:meachou/screens/store/subscription_screen.dart';
+import 'package:meachou/screens/subscription/subscription_screen.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

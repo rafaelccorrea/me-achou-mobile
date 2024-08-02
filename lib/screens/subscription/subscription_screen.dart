@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'credit_card_form.dart';
 
 class SubscriptionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           Container(
@@ -43,19 +45,19 @@ class SubscriptionScreen extends StatelessWidget {
                       color: Colors.blue.shade50,
                       border: Border.all(color: Colors.blueAccent),
                     ),
-                    child: const ListTile(
-                      leading:
-                          Icon(Icons.check_circle, color: Colors.blueAccent),
-                      title: Text(
+                    child: ListTile(
+                      leading: const Icon(Icons.check_circle,
+                          color: Colors.blueAccent),
+                      title: const Text(
                         'Mensal',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      subtitle: Text(
+                      subtitle: const Text(
                         'Acesso a todos os recursos.',
                         style: TextStyle(fontSize: 16),
                       ),
-                      trailing: Text(
+                      trailing: const Text(
                         'R\$ 29,90/mês',
                         style: TextStyle(
                           fontSize: 16,
@@ -69,9 +71,24 @@ class SubscriptionScreen extends StatelessWidget {
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => NextScreen()),
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.white,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(25.0),
+                            ),
+                          ),
+                          builder: (BuildContext context) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom:
+                                    MediaQuery.of(context).viewInsets.bottom,
+                              ),
+                              child: CreditCardForm(),
+                            );
+                          },
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -111,31 +128,6 @@ class SubscriptionScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class NextScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Próxima Tela'),
-      ),
-      body: const Center(
-        child: Text('Conteúdo da próxima tela'),
-      ),
-    );
-  }
-}
-
-class LogoWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/finder-logo.png',
-      height: 150,
-      color: Colors.white,
     );
   }
 }

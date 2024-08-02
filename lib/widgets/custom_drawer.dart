@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meachou/screens/follow/followers_screen.dart';
 import 'package:meachou/screens/profile_screen.dart';
 import 'package:meachou/screens/store/create_store_screen.dart';
-import 'package:meachou/screens/store/subscription_screen.dart';
+import 'package:meachou/screens/subscription/subscription_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:meachou/services/subscription_client.dart';

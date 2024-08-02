@@ -30,6 +30,9 @@ dependencies:
   local_auth: ^2.2.0
   image_picker: ^1.1.2
   flutter_masked_text2: ^0.9.1
+  lottie: ^3.1.2
+  cpf_cnpj_validator: ^2.0.0
+  credit_card_validator: ^2.1.0
 
 dev_dependencies:
   flutter_test:
@@ -43,4 +46,5 @@ flutter:
     - assets/finder-logo.png
     - assets/background_image.jpg
     - assets/no_stores.png
+    - assets/animation/
 
