@@ -10,18 +10,20 @@ class UserService {
       String name, String email, String password) async {
     return await apiClient.post(
       ApiConstants.createUserEndpoint,
-      body: {
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
         'name': name,
         'email': email,
         'password': password,
-      },
+      }),
     );
   }
 
   Future<http.Response> forgotPasswordEndpoint(String email) async {
     return await apiClient.post(
       ApiConstants.forgotPasswordEndpoint,
-      body: {'email': email},
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
     );
   }
 
@@ -29,11 +31,12 @@ class UserService {
       String email, String token, String newPassword) async {
     return await apiClient.post(
       ApiConstants.resetPasswordEndpoint,
-      body: {
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
         'email': email,
         'token': token,
         'newPassword': newPassword,
-      },
+      }),
     );
   }
 

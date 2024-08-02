@@ -67,7 +67,11 @@ class FollowsService {
     final endpoint =
         ApiConstants.followStoreEndpoint.replaceFirst(':storeId', storeId);
 
-    final response = await apiClient.post(endpoint, body: {});
+    final response = await apiClient.post(
+      endpoint,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({}),
+    );
     if (response.statusCode != 201) {
       throw Exception('Failed to follow store');
     }
