@@ -349,7 +349,9 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                   icon: FontAwesomeIcons.phone,
                   iconColor: Colors.green[800]!,
                   validator: (value) {
-                    return null; // Não obrigatório
+                    if (value!.isEmpty) return 'Campo obrigatório';
+                    if (value.length < 14) return 'Número de telefone inválido';
+                    return null;
                   },
                 ),
                 CustomPhoneFormField(
