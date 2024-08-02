@@ -54,18 +54,15 @@ class StoreCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    _buildStarRating(store['ranking']),
-                    const SizedBox(width: 8),
-                    Text(
-                      '(${store['reviewCount']} avaliações)',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                _buildStarRating(store['ranking'].toDouble()),
+                const SizedBox(
+                    height: 4), // Add space between stars and review count
+                Text(
+                  '(${store['reviewCount']} avaliações)',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -129,14 +126,32 @@ class StoreCard extends StatelessWidget {
         .join(' ');
   }
 
-  Widget _buildStarRating(int ranking) {
+  Widget _buildStarRating(double ranking) {
+    int fullStars = ranking.floor();
+    bool hasHalfStar = (ranking - fullStars) >= 0.5;
+
     return Row(
-      children: List.generate(5, (index) {
-        return Icon(
-          index < ranking ? Icons.star : Icons.star_border,
-          color: Colors.yellow,
-          size: 16,
-        );
+      children: List.generate(7, (index) {
+        // Adjusted to 7 stars
+        if (index < fullStars) {
+          return const Icon(
+            Icons.star,
+            color: Colors.yellow,
+            size: 16,
+          );
+        } else if (index == fullStars && hasHalfStar) {
+          return const Icon(
+            Icons.star_half,
+            color: Colors.yellow,
+            size: 16,
+          );
+        } else {
+          return const Icon(
+            Icons.star_border,
+            color: Colors.yellow,
+            size: 16,
+          );
+        }
       }),
     );
   }
