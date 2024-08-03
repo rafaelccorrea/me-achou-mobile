@@ -110,33 +110,18 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
         }
       };
 
-      final response = await _storeService.createStore(storeData);
+      final response = await _storeService.createStore(storeData,
+          profilePicture: _profileImage);
 
       if (response.statusCode == 201) {
-        if (_profileImage != null) {
-          try {
-            final profileResponse =
-                await _storeService.uploadProfileImage(_profileImage!);
-            if (profileResponse.statusCode != 200) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Erro ao atualizar a foto de perfil!')),
-              );
-            }
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Erro ao atualizar a foto de perfil!')),
-            );
-          }
-        }
-
         try {
           await _authService.refreshToken();
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Erro ao atualizar o token!')),
           );
+          await _authService.logout();
+          return;
         }
 
         Navigator.pushReplacement(

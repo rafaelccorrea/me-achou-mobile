@@ -27,7 +27,7 @@ class ApiConstants {
       '$baseUrl/subscription/details';
   static String get createStoreEndpoint => '$baseUrl/stores';
   static String get uploadProfileImageEndpoint =>
-      '$baseUrl/stores/profile-picture';
+      '$baseUrl/stores/profile-picture/:storeId';
   static String get createSubscriptionEndpoint =>
       '$baseUrl/subscription/create';
 }

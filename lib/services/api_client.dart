@@ -83,6 +83,7 @@ class ApiClient {
   Future<http.StreamedResponse> uploadFile(String url, File file,
       {Map<String, String>? headers}) async {
     final String? token = await authService.getAccessToken();
+
     final newHeaders = {
       if (token != null) 'Authorization': 'Bearer $token',
       if (headers != null) ...headers,
@@ -91,16 +92,17 @@ class ApiClient {
     final request = http.MultipartRequest('POST', Uri.parse(url));
     request.files.add(await http.MultipartFile.fromPath('file', file.path));
     request.headers.addAll(newHeaders);
-
     return request.send();
   }
 
   Future<http.Response> sendMultipartRequest(
       http.MultipartRequest request) async {
     final String? token = await authService.getAccessToken();
+
     if (token != null) {
       request.headers['Authorization'] = 'Bearer $token';
     }
+
     final streamedResponse = await request.send();
     return http.Response.fromStream(streamedResponse);
   }

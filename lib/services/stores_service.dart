@@ -59,7 +59,8 @@ class StoreService {
     }
   }
 
-  Future<http.Response> createStore(Map<String, dynamic> storeData) async {
+  Future<http.Response> createStore(Map<String, dynamic> storeData,
+      {File? profilePicture}) async {
     final uri = Uri.parse(ApiConstants.createStoreEndpoint);
     final request = http.MultipartRequest('POST', uri);
 
@@ -103,11 +104,24 @@ class StoreService {
       request.fields['address'] = json.encode(storeData['address']);
     }
 
-    return await apiClient.sendMultipartRequest(request);
+    final response = await apiClient.sendMultipartRequest(request);
+
+    if (response.statusCode == 201) {
+      final responseData = json.decode(response.body);
+      final storeId = responseData['id'];
+
+      if (profilePicture != null) {
+        await uploadProfileImage(profilePicture, storeId);
+      }
+    }
+
+    return response;
   }
 
-  Future<http.StreamedResponse> uploadProfileImage(File image) async {
-    final uri = Uri.parse(ApiConstants.uploadProfileImageEndpoint);
+  Future<http.StreamedResponse> uploadProfileImage(
+      File image, String storeId) async {
+    final uri = Uri.parse(ApiConstants.uploadProfileImageEndpoint
+        .replaceFirst(':storeId', storeId));
     return await apiClient.uploadFile(uri.toString(), image);
   }
 }
