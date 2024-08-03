@@ -10,6 +10,7 @@ import 'package:meachou/screens/subscription/subscription_screen.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../../services/stores_service.dart';
 import './widgets/custom_widgets.dart';
 
@@ -121,6 +122,14 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
             const SnackBar(content: Text('Erro ao atualizar o token!')),
           );
           await _authService.logout();
+          Fluttertoast.showToast(
+            msg: "Deslogamos você por segurança para atualizar os dados.",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
           return;
         }
 
