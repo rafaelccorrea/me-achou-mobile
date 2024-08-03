@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meachou/services/auth_service.dart';
 
@@ -91,6 +92,27 @@ class ApiClient {
 
     final request = http.MultipartRequest('POST', Uri.parse(url));
     request.files.add(await http.MultipartFile.fromPath('file', file.path));
+    request.headers.addAll(newHeaders);
+    return request.send();
+  }
+
+  Future<http.StreamedResponse> uploadBytes(
+      String url, List<int> bytes, String filename,
+      {Map<String, String>? headers}) async {
+    final String? token = await authService.getAccessToken();
+
+    final newHeaders = {
+      if (token != null) 'Authorization': 'Bearer $token',
+      if (headers != null) ...headers,
+    };
+
+    final request = http.MultipartRequest('POST', Uri.parse(url));
+    request.files.add(http.MultipartFile.fromBytes(
+      'file',
+      bytes,
+      filename: filename,
+      contentType: MediaType('image', 'jpeg'),
+    ));
     request.headers.addAll(newHeaders);
     return request.send();
   }

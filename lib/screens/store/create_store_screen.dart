@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
 import 'package:meachou/components/loading/loading_dots.dart';
 import 'package:meachou/screens/subscription/subscription_screen.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
@@ -59,7 +60,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
     'Educação'
   ];
   List<String> socialNetworks = [];
-  List<String> photos = [];
+  List<File> photos = []; // Ensure this is List<File>
   bool delivery = false;
   bool inHomeService = false;
 
@@ -94,16 +95,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                 .replaceAll(',', '.'))
             : null,
         'email': _emailController.text,
-        'photos': photos.map((filePath) {
-          final file = File(filePath);
-          return {
-            'fieldname': 'photos',
-            'originalname': file.path.split('/').last,
-            'encoding': '7bit',
-            'buffer': base64Encode(file.readAsBytesSync()),
-            'size': file.lengthSync(),
-          };
-        }).toList(),
+        'photos': photos,
         'delivery': delivery,
         'in_home_service': inHomeService,
         'working_hours': _workingHoursController.text,
@@ -120,6 +112,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
 
       final response = await _storeService.createStore(storeData,
           profilePicture: _profileImage);
+
+      print('@@@@@@@@@@@@@@@@ ${response.body}');
 
       if (response.statusCode == 201) {
         try {
@@ -160,9 +154,16 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      setState(() {
-        _profileImage = File(pickedFile.path);
-      });
+      final imageFile = File(pickedFile.path);
+      if (await _validateAndCompressImage(imageFile)) {
+        setState(() {
+          _profileImage = imageFile;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Imagem deve ter no máximo 2MB.')),
+        );
+      }
     }
   }
 
@@ -182,16 +183,46 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
     final ImagePicker _picker = ImagePicker();
     final List<XFile>? pickedFiles = await _picker.pickMultiImage();
     if (pickedFiles != null) {
-      setState(() {
-        final newPhotos = pickedFiles.map((file) => file.path).toList();
-        if (photos.length + newPhotos.length <= 5) {
-          photos.addAll(newPhotos);
+      for (var file in pickedFiles) {
+        final imageFile = File(file.path);
+        if (await _validateAndCompressImage(imageFile)) {
+          setState(() {
+            photos.add(imageFile); // Add as File
+          });
         } else {
-          final remainingSlots = 5 - photos.length;
-          photos.addAll(newPhotos.take(remainingSlots));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Imagem deve ter no máximo 2MB.')),
+          );
         }
-      });
+      }
     }
+  }
+
+  Future<bool> _validateAndCompressImage(File imageFile) async {
+    int bytes = await imageFile.length();
+    if (bytes > 2 * 1024 * 1024) {
+      final compressedImage = await _compressImage(imageFile, 2 * 1024 * 1024);
+      if (compressedImage != null) {
+        imageFile.writeAsBytesSync(compressedImage);
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
+  Future<List<int>?> _compressImage(File file, int maxSize) async {
+    final image = img.decodeImage(file.readAsBytesSync());
+    if (image == null) {
+      return null;
+    }
+    int quality = 100;
+    List<int> compressedBytes;
+    do {
+      compressedBytes = img.encodeJpg(image, quality: quality);
+      quality -= 10;
+    } while (compressedBytes.length > maxSize && quality > 0);
+    return compressedBytes.length <= maxSize ? compressedBytes : null;
   }
 
   Future<void> _fetchAddressFromCep(String cep) async {
@@ -291,41 +322,38 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    ElevatedButton.icon(
-                      onPressed: _pickProfileImage,
-                      icon: const Icon(Icons.upload_file),
-                      label: const Text('Upload Imagem de Perfil'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                      ),
-                    ),
-                    if (_profileImage != null)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16),
-                        child: Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: Image.file(
-                                _profileImage!,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                              ),
+                    _profileImage == null
+                        ? ElevatedButton.icon(
+                            onPressed: _pickProfileImage,
+                            icon: const Icon(Icons.upload_file),
+                            label: const Text('Upload Imagem de Perfil'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
                             ),
-                            Positioned(
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: _removeProfileImage,
-                                child: const Icon(
-                                  Icons.remove_circle,
-                                  color: Colors.red,
+                          )
+                        : Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Image.file(
+                                  _profileImage!,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
+                              Positioned(
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: _removeProfileImage,
+                                  child: const Icon(
+                                    Icons.remove_circle,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                   ],
                 ),
                 if (_profileImage == null)
@@ -363,7 +391,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                   iconColor: Colors.green[800]!,
                   validator: (value) {
                     if (value!.isEmpty) return 'Campo obrigatório';
-                    if (value.length < 14) return 'Número de telefone inválido';
+                    if (!RegExp(r'^\(\d{2}\) \d{4,5}-\d{4}$').hasMatch(value))
+                      return 'Número de telefone inválido';
                     return null;
                   },
                 ),
@@ -374,7 +403,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                   iconColor: Colors.green,
                   validator: (value) {
                     if (value!.isEmpty) return 'Campo obrigatório';
-                    if (value.length < 14) return 'Número de telefone inválido';
+                    if (!RegExp(r'^\(\d{2}\) \d{4,5}-\d{4}$').hasMatch(value))
+                      return 'Número de telefone inválido';
                     return null;
                   },
                 ),
@@ -551,7 +581,9 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                 ),
                 CustomPhotoPickerField(
                   labelText: 'Fotos do ambiente',
-                  photos: photos,
+                  photos: photos
+                      .map((file) => file.path)
+                      .toList(), // Convert File to path string
                   onTap: _pickImages,
                   icon: FontAwesomeIcons.camera,
                   iconColor: Colors.purple,
@@ -571,9 +603,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                   labelText: 'Horário de funcionamento',
                   icon: FontAwesomeIcons.clock,
                   iconColor: Colors.orange,
-                  validator: (value) {
-                    return null; // Não obrigatório
-                  },
+                  validator: null,
                 ),
                 const SizedBox(height: 8),
               ],

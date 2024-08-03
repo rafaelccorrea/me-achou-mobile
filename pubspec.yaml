@@ -33,6 +33,7 @@ dependencies:
   lottie: ^3.1.2
   cpf_cnpj_validator: ^2.0.0
   credit_card_validator: ^2.1.0
+  image: ^3.0.1
 
 dev_dependencies:
   flutter_test:

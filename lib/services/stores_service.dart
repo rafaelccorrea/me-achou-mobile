@@ -3,6 +3,8 @@ import 'package:meachou/services/api_client.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:image/image.dart' as img;
 
 class StoreService {
   final ApiClient apiClient = ApiClient();
@@ -90,14 +92,25 @@ class StoreService {
       request.fields['website'] = storeData['website'] ?? '';
     }
     if (storeData.containsKey('social_networks')) {
-      request.fields['social_networks'] =
-          json.encode(storeData['social_networks'] ?? {});
+      List<String> socialNetworks =
+          List<String>.from(storeData['social_networks']);
+      String sanitizedSocialNetworks = socialNetworks
+          .map((network) => network.replaceAll(RegExp(r'[^\w.,:/-]'), ''))
+          .join(',');
+      request.fields['social_networks'] = sanitizedSocialNetworks;
     }
     if (storeData.containsKey('photos')) {
       List<File> photos = List<File>.from(storeData['photos']);
       for (var photo in photos) {
-        request.files
-            .add(await http.MultipartFile.fromPath('photos', photo.path));
+        var compressedPhoto = await _compressImage(photo);
+        if (compressedPhoto != null) {
+          request.files.add(http.MultipartFile.fromBytes(
+            'photos',
+            compressedPhoto,
+            filename: photo.path.split('/').last,
+            contentType: MediaType('image', 'jpeg'),
+          ));
+        }
       }
     }
     if (storeData.containsKey('address')) {
@@ -118,10 +131,35 @@ class StoreService {
     return response;
   }
 
+  Future<List<int>?> _compressImage(File file,
+      {int quality = 80, int maxSize = 2 * 1024 * 1024}) async {
+    var image = img.decodeImage(file.readAsBytesSync());
+    if (image == null) return null;
+
+    int imageBytes = file.lengthSync();
+    if (imageBytes <= maxSize) return file.readAsBytesSync();
+
+    while (imageBytes > maxSize && quality > 10) {
+      var compressedImage = img.encodeJpg(image, quality: quality);
+      imageBytes = compressedImage.length;
+      quality -= 10;
+    }
+
+    return imageBytes <= maxSize
+        ? img.encodeJpg(image, quality: quality)
+        : null;
+  }
+
   Future<http.StreamedResponse> uploadProfileImage(
       File image, String storeId) async {
     final uri = Uri.parse(ApiConstants.uploadProfileImageEndpoint
         .replaceFirst(':storeId', storeId));
-    return await apiClient.uploadFile(uri.toString(), image);
+    var compressedImage = await _compressImage(image);
+    if (compressedImage == null) {
+      throw Exception("Imagem muito grande para compressão");
+    }
+
+    return await apiClient.uploadBytes(
+        uri.toString(), compressedImage, image.path.split('/').last);
   }
 }

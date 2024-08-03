@@ -337,27 +337,25 @@ class _CustomPhotoPickerFieldState extends State<CustomPhotoPickerField> {
           ),
           Wrap(
             children: widget.photos
-                .map(
-                  (photo) => Stack(
-                    children: [
-                      Image.file(File(photo), width: 100, height: 100),
-                      Positioned(
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              widget.photos.remove(photo);
-                            });
-                          },
-                          child: const Icon(
-                            Icons.remove_circle,
-                            color: Colors.red,
+                .map((photo) => Stack(
+                      children: [
+                        Image.file(File(photo), width: 100, height: 100),
+                        Positioned(
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                widget.photos.remove(photo);
+                              });
+                            },
+                            child: const Icon(
+                              Icons.remove_circle,
+                              color: Colors.red,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                )
+                      ],
+                    ))
                 .toList(),
           ),
         ],
