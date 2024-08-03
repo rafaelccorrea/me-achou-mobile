@@ -69,6 +69,13 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      if (_profileImage == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Imagem de perfil é obrigatória!')),
+        );
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
@@ -81,11 +88,11 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
         'whatsapp_phone': _whatsappPhoneController.text,
         'website': _websiteController.text,
         'social_networks': socialNetworks,
-        'service_values': double.parse(
-          _serviceValuesController.text
-              .replaceAll('R\$', '')
-              .replaceAll(',', '.'),
-        ),
+        'service_values': _serviceValuesController.text.isNotEmpty
+            ? double.parse(_serviceValuesController.text
+                .replaceAll('R\$', '')
+                .replaceAll(',', '.'))
+            : null,
         'email': _emailController.text,
         'photos': photos.map((filePath) {
           final file = File(filePath);
@@ -297,10 +304,14 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                         padding: const EdgeInsets.only(left: 16),
                         child: Stack(
                           children: [
-                            Image.file(
-                              _profileImage!,
-                              width: 50,
-                              height: 50,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: Image.file(
+                                _profileImage!,
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                             Positioned(
                               right: 0,
@@ -317,6 +328,14 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                       ),
                   ],
                 ),
+                if (_profileImage == null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Imagem de perfil é obrigatória!',
+                      style: TextStyle(color: Colors.red[700]),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -397,17 +416,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                   icon: FontAwesomeIcons.dollarSign,
                   iconColor: Colors.green,
                   isNumeric: true,
-                  validator: (value) {
-                    if (value == null ||
-                        value.isEmpty ||
-                        double.tryParse(value
-                                .replaceAll('R\$', '')
-                                .replaceAll(',', '.')) ==
-                            null) {
-                      return 'Por favor, insira um valor válido.';
-                    }
-                    return null;
-                  },
+                  validator: null,
                   onChanged: (value) {
                     if (value.isEmpty) {
                       _serviceValuesController.clear();
@@ -486,6 +495,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                     }
                     return null;
                   },
+                  enabled: _postalCodeController.text.length == 9,
                 ),
                 CustomTextFormField(
                   controller: _addressNumberController,
@@ -498,6 +508,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                     }
                     return null;
                   },
+                  enabled: _postalCodeController.text.length == 9,
                 ),
                 CustomTextFormField(
                   controller: _cityController,
@@ -510,6 +521,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                     }
                     return null;
                   },
+                  enabled: _postalCodeController.text.length == 9,
                 ),
                 CustomTextFormField(
                   controller: _stateController,
@@ -522,6 +534,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                     }
                     return null;
                   },
+                  enabled: _postalCodeController.text.length == 9,
                 ),
                 CustomTextFormField(
                   controller: _regionController,
@@ -534,6 +547,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                     }
                     return null;
                   },
+                  enabled: _postalCodeController.text.length == 9,
                 ),
                 CustomPhotoPickerField(
                   labelText: 'Fotos do ambiente',

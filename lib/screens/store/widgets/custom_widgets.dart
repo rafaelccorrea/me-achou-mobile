@@ -11,6 +11,7 @@ class CustomTextFormField extends StatelessWidget {
   final int? maxLength;
   final String? Function(String?)? validator;
   final ValueChanged<String>? onChanged;
+  final bool enabled;
 
   const CustomTextFormField({
     Key? key,
@@ -22,6 +23,7 @@ class CustomTextFormField extends StatelessWidget {
     this.maxLength,
     this.validator,
     this.onChanged,
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -43,6 +45,7 @@ class CustomTextFormField extends StatelessWidget {
             : null,
         validator: validator,
         onChanged: onChanged,
+        enabled: enabled,
       ),
     );
   }
@@ -55,6 +58,7 @@ class CustomDropdownFormField extends StatelessWidget {
   final IconData icon;
   final Color? iconColor;
   final List<String> items;
+  final bool enabled;
 
   const CustomDropdownFormField({
     Key? key,
@@ -64,6 +68,7 @@ class CustomDropdownFormField extends StatelessWidget {
     required this.icon,
     this.iconColor,
     required this.items,
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -85,7 +90,8 @@ class CustomDropdownFormField extends StatelessWidget {
                   child: Text(item),
                 ))
             .toList(),
-        onChanged: onChanged,
+        onChanged: enabled ? onChanged : null,
+        disabledHint: Text(initialValue),
       ),
     );
   }
