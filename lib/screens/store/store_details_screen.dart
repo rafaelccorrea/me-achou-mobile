@@ -44,60 +44,53 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.black.withOpacity(0.5),
-        body: Stack(
-          children: [
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          if (isLoading) ...[
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.1),
+              ),
+            ),
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Container(
+                color: Colors.black.withOpacity(0.1),
+              ),
+            ),
             const Center(
               child: LoadingDots(),
             ),
+          ],
+          if (!isLoading && errorMessage.isNotEmpty)
             Center(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                child: Container(
-                  color: Colors.black.withOpacity(0.5),
-                ),
+              child: Text(errorMessage),
+            ),
+          if (!isLoading && errorMessage.isEmpty && store != null)
+            SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 16),
+                  _buildBusinessInfo(),
+                  const SizedBox(height: 16),
+                  if (_hasContactInfo()) _buildExpandableContactInfo(context),
+                  const SizedBox(height: 16),
+                  if (_hasSocialNetworks())
+                    _buildSocialNetworksSection(context),
+                  const SizedBox(height: 16),
+                  if (_hasServiceValues())
+                    _buildWorkingHoursAndServicesSection(context),
+                  const SizedBox(height: 16),
+                  _buildPhotosSection(),
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
-          ],
-        ),
-      );
-    }
-
-    if (errorMessage.isNotEmpty) {
-      return Scaffold(
-        body: Center(child: Text(errorMessage)),
-      );
-    }
-
-    if (store == null) {
-      return const Scaffold(
-        body: Center(child: Text('Dados da loja incompletos')),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 16),
-            _buildBusinessInfo(),
-            const SizedBox(height: 16),
-            if (_hasContactInfo()) _buildExpandableContactInfo(context),
-            const SizedBox(height: 16),
-            if (_hasSocialNetworks()) _buildSocialNetworksSection(context),
-            const SizedBox(height: 16),
-            if (_hasServiceValues())
-              _buildWorkingHoursAndServicesSection(context),
-            const SizedBox(height: 16),
-            _buildPhotosSection(),
-            const SizedBox(height: 32),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -150,39 +143,8 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
             _showImageDialog(
                 store!['profile_picture'] ?? 'assets/default_avatar.png');
           },
-          child: Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
-            child: CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.grey[300],
-              child: store!['profile_picture'] != null
-                  ? ClipOval(
-                      child: Image.network(
-                        store!['profile_picture'],
-                        fit: BoxFit.cover,
-                        width: 100.0,
-                        height: 100.0,
-                        loadingBuilder: (BuildContext context, Widget child,
-                            ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          } else {
-                            return Shimmer.fromColors(
-                              baseColor: Colors.grey[300]!,
-                              highlightColor: Colors.grey[100]!,
-                              child: Container(
-                                width: 100.0,
-                                height: 100.0,
-                                color: Colors.grey[300],
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    )
-                  : const Icon(Icons.person, size: 50, color: Colors.white),
-            ),
+          child: ClipOval(
+            child: _buildProfilePicture(),
           ),
         ),
         const SizedBox(width: 20),
@@ -213,6 +175,36 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildProfilePicture() {
+    return store!['profile_picture'] != null
+        ? Image.network(
+            store!['profile_picture'],
+            fit: BoxFit.cover,
+            width: 100.0,
+            height: 100.0,
+            loadingBuilder: (BuildContext context, Widget child,
+                ImageChunkEvent? loadingProgress) {
+              if (loadingProgress == null) {
+                return child;
+              } else {
+                return Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: 100.0,
+                    height: 100.0,
+                    color: Colors.grey[300],
+                  ),
+                );
+              }
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.person, size: 50, color: Colors.white);
+            },
+          )
+        : const Icon(Icons.person, size: 50, color: Colors.white);
   }
 
   Widget _buildStarRating(double ranking) {
