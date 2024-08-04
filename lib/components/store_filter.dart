@@ -183,7 +183,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
                         _selectedRankingMin =
                             _selectedRankingMin == int.tryParse(value!)
                                 ? null
-                                : int.tryParse(value!);
+                                : int.tryParse(value);
                       });
                     }),
                     const SizedBox(height: 16.0),
@@ -196,7 +196,7 @@ class _StoreFilterFormState extends State<StoreFilterForm> {
                         _selectedRankingMax =
                             _selectedRankingMax == int.tryParse(value!)
                                 ? null
-                                : int.tryParse(value!);
+                                : int.tryParse(value);
                         if (_selectedRankingMax != null &&
                             (_selectedRankingMin == null ||
                                 _selectedRankingMin! > _selectedRankingMax!)) {

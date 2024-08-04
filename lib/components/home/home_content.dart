@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:convert';
 import 'package:meachou/components/home/event_carousel.dart';
@@ -48,9 +47,6 @@ class _HomeContentState extends State<HomeContent>
     super.initState();
     _scrollController.addListener(_onScroll);
     applyFilters(widget.filters);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchUserStoreId();
-    });
   }
 
   @override
@@ -70,33 +66,6 @@ class _HomeContentState extends State<HomeContent>
             _scrollController.position.maxScrollExtent &&
         !isLoadingMoreStores) {
       loadMoreStores();
-    }
-  }
-
-  Future<void> fetchUserStoreId() async {
-    if (!mounted) return;
-
-    try {
-      final secureStorage = FlutterSecureStorage();
-      final userJson = await secureStorage.read(key: 'user');
-      if (userJson != null) {
-        final user = json.decode(userJson);
-        final storeId = user['store']['id'];
-
-        if (storeId != null) {
-          final storeDetails = await storeService.getStoreDetails(storeId);
-
-          if (storeDetails != null && mounted) {
-            setState(() {
-              userStoreId = storeId;
-            });
-          } else {
-            throw Exception('Failed to load user store ID');
-          }
-        }
-      }
-    } catch (e) {
-      _showErrorToast('Erro ao carregar ID da loja do usuário.');
     }
   }
 
@@ -141,16 +110,16 @@ class _HomeContentState extends State<HomeContent>
             )
             .timeout(const Duration(seconds: 10));
 
-        if (response?.statusCode == 200) {
+        if (response.statusCode == 200) {
           if (mounted) {
             setState(() {
-              stores = json.decode(response!.body)['data'];
+              stores = json.decode(response.body)['data'];
               isLoadingStores = false;
               _initializeConfettiControllers();
             });
           }
           return; // Successful response, exit the loop
-        } else if (response?.statusCode == 404) {
+        } else if (response.statusCode == 404) {
           if (mounted) {
             setState(() {
               stores = [];
@@ -204,8 +173,8 @@ class _HomeContentState extends State<HomeContent>
             )
             .timeout(const Duration(seconds: 10));
 
-        if (response?.statusCode == 200) {
-          final newStores = json.decode(response!.body)['data'];
+        if (response.statusCode == 200) {
+          final newStores = json.decode(response.body)['data'];
           if (mounted) {
             setState(() {
               stores.addAll(newStores);
@@ -214,7 +183,7 @@ class _HomeContentState extends State<HomeContent>
             });
           }
           return; // Successful response, exit the loop
-        } else if (response?.statusCode == 404) {
+        } else if (response.statusCode == 404) {
           if (mounted) {
             setState(() {
               isLoadingMoreStores = false;
@@ -261,15 +230,15 @@ class _HomeContentState extends State<HomeContent>
             )
             .timeout(const Duration(seconds: 10));
 
-        if (response?.statusCode == 200) {
+        if (response.statusCode == 200) {
           if (mounted) {
             setState(() {
-              events = json.decode(response!.body)['data'];
+              events = json.decode(response.body)['data'];
               isLoadingEvents = false;
             });
           }
           return; // Successful response, exit the loop
-        } else if (response?.statusCode == 404) {
+        } else if (response.statusCode == 404) {
           if (mounted) {
             setState(() {
               events = [];
