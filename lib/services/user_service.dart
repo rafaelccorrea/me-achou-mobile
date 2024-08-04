@@ -1,10 +1,15 @@
 import 'package:meachou/constants/api_constants.dart';
 import 'package:meachou/services/api_client.dart';
+import 'package:meachou/services/auth_service.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart';
 
 class UserService {
   final ApiClient apiClient = ApiClient();
+  final AuthService authService = AuthService();
 
   Future<http.Response> createUserEndpoint(
       String name, String email, String password) async {
@@ -52,6 +57,57 @@ class UserService {
 
   Future<http.Response> deleteUser() async {
     final response = await apiClient.delete(ApiConstants.userDeleteEndpoint);
+    return response;
+  }
+
+  Future<http.Response> updateUserName(String name) async {
+    var request = http.MultipartRequest(
+      'PATCH',
+      Uri.parse(ApiConstants.updateUserEndpoint),
+    );
+    request.fields['name'] = name;
+    final response = await apiClient.sendMultipartRequest(request);
+
+    if (response.statusCode == 200) {
+      print("#############################################################");
+
+      await authService.refreshToken();
+    }
+
+    return response;
+  }
+
+  Future<http.Response> updateUserAvatar(String filePath) async {
+    final file = File(filePath);
+    int fileSize = await file.length();
+    const int maxSize = 2 * 1024 * 1024; // 2 MB
+
+    if (fileSize > maxSize) {
+      final compressedFile = await apiClient.compressImage(file, maxSize);
+      if (compressedFile == null) {
+        throw Exception('A imagem deve ter menos de 2 MB.');
+      }
+      filePath = compressedFile.path;
+    }
+
+    final mimeTypeData = lookupMimeType(filePath)!.split('/');
+    final multipartFile = await http.MultipartFile.fromPath(
+      'file',
+      filePath,
+      contentType: MediaType(mimeTypeData[0], mimeTypeData[1]),
+    );
+
+    var request = http.MultipartRequest(
+      'PATCH',
+      Uri.parse(ApiConstants.updateUserEndpoint),
+    );
+    request.files.add(multipartFile);
+    final response = await apiClient.sendMultipartRequest(request);
+
+    if (response.statusCode == 200) {
+      await authService.refreshToken();
+    }
+
     return response;
   }
 }

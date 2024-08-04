@@ -8,6 +8,7 @@ import 'package:meachou/components/custom_app_bar.dart';
 import 'package:meachou/components/custom_bottom_navigation_bar.dart';
 import 'package:meachou/components/home/home_content.dart';
 import 'package:meachou/services/auth_service.dart';
+import 'package:meachou/services/user_service.dart';
 import 'package:meachou/screens/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -64,6 +65,33 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _updateUserName(String newName) async {
+    UserService userService = UserService();
+    final drawerProvider = Provider.of<DrawerProvider>(context, listen: false);
+    try {
+      drawerProvider.setLoading(true);
+      await userService.updateUserName(newName);
+      drawerProvider.userName = newName; // Atualize o nome no DrawerProvider
+    } catch (e) {
+      print('Erro ao atualizar o nome: $e');
+    } finally {
+      drawerProvider.setLoading(false);
+    }
+  }
+
+  Future<void> _updateUserAvatar(String filePath) async {
+    UserService userService = UserService();
+    final drawerProvider = Provider.of<DrawerProvider>(context, listen: false);
+    try {
+      drawerProvider.setLoading(true);
+      await userService.updateUserAvatar(filePath);
+    } catch (e) {
+      print('Erro ao atualizar o avatar: $e');
+    } finally {
+      drawerProvider.setLoading(false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final AuthService authService = Provider.of<AuthService>(context);
@@ -96,6 +124,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final avatar = user['avatar'];
         final name = user['name'];
 
+        // Defina o nome do usuário no DrawerProvider
+        Provider.of<DrawerProvider>(context, listen: false).userName = name;
+
         return Scaffold(
           key: _scaffoldKey,
           appBar: _selectedIndex == 0
@@ -118,6 +149,8 @@ class _HomeScreenState extends State<HomeScreen> {
             toggleDrawer: () => _scaffoldKey.currentState?.openDrawer(),
             userName: name,
             userAvatarUrl: avatar,
+            onUpdateUserName: _updateUserName,
+            onUpdateUserAvatar: _updateUserAvatar,
           ),
         );
       },

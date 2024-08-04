@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:meachou/services/auth_service.dart';
+import 'package:image/image.dart' as img;
 
 class ApiClient {
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
@@ -127,5 +128,23 @@ class ApiClient {
 
     final streamedResponse = await request.send();
     return http.Response.fromStream(streamedResponse);
+  }
+
+  Future<File?> compressImage(File file, int maxSize) async {
+    final image = img.decodeImage(file.readAsBytesSync());
+
+    if (image == null) {
+      return null;
+    }
+
+    int quality = 100;
+    File? compressedFile;
+    do {
+      final compressedBytes = img.encodeJpg(image, quality: quality);
+      compressedFile = File(file.path)..writeAsBytesSync(compressedBytes);
+      quality -= 10;
+    } while (compressedFile.lengthSync() > maxSize && quality > 0);
+
+    return compressedFile.lengthSync() <= maxSize ? compressedFile : null;
   }
 }

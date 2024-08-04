@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:image/image.dart' as img;
 
 class StoreService {
   final ApiClient apiClient = ApiClient();
@@ -102,11 +101,12 @@ class StoreService {
     if (storeData.containsKey('photos')) {
       List<File> photos = List<File>.from(storeData['photos']);
       for (var photo in photos) {
-        var compressedPhoto = await _compressImage(photo);
+        var compressedPhoto =
+            await apiClient.compressImage(photo, 2 * 1024 * 1024);
         if (compressedPhoto != null) {
           request.files.add(http.MultipartFile.fromBytes(
             'photos',
-            compressedPhoto,
+            compressedPhoto.readAsBytesSync(),
             filename: photo.path.split('/').last,
             contentType: MediaType('image', 'jpeg'),
           ));
@@ -131,35 +131,16 @@ class StoreService {
     return response;
   }
 
-  Future<List<int>?> _compressImage(File file,
-      {int quality = 80, int maxSize = 2 * 1024 * 1024}) async {
-    var image = img.decodeImage(file.readAsBytesSync());
-    if (image == null) return null;
-
-    int imageBytes = file.lengthSync();
-    if (imageBytes <= maxSize) return file.readAsBytesSync();
-
-    while (imageBytes > maxSize && quality > 10) {
-      var compressedImage = img.encodeJpg(image, quality: quality);
-      imageBytes = compressedImage.length;
-      quality -= 10;
-    }
-
-    return imageBytes <= maxSize
-        ? img.encodeJpg(image, quality: quality)
-        : null;
-  }
-
   Future<http.StreamedResponse> uploadProfileImage(
       File image, String storeId) async {
     final uri = Uri.parse(ApiConstants.uploadProfileImageEndpoint
         .replaceFirst(':storeId', storeId));
-    var compressedImage = await _compressImage(image);
+    var compressedImage = await apiClient.compressImage(image, 2 * 1024 * 1024);
     if (compressedImage == null) {
       throw Exception("Imagem muito grande para compressão");
     }
 
-    return await apiClient.uploadBytes(
-        uri.toString(), compressedImage, image.path.split('/').last);
+    return await apiClient.uploadBytes(uri.toString(),
+        compressedImage.readAsBytesSync(), image.path.split('/').last);
   }
 }

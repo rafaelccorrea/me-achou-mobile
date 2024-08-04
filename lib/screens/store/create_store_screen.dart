@@ -5,14 +5,14 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as img;
 import 'package:meachou/components/loading/loading_dots.dart';
 import 'package:meachou/screens/subscription/subscription_screen.dart';
+import 'package:meachou/services/stores_service.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
 import 'package:meachou/services/auth_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import '../../services/stores_service.dart';
+import 'package:meachou/services/api_client.dart';
 import './widgets/custom_widgets.dart';
 
 class CreateStoreScreen extends StatefulWidget {
@@ -25,6 +25,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
   final ScrollController _scrollController = ScrollController();
   final AuthService _authService = AuthService();
   final StoreService _storeService = StoreService();
+  final ApiClient _apiClient = ApiClient();
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
 
   int _currentStep = 0;
@@ -201,28 +202,15 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
   Future<bool> _validateAndCompressImage(File imageFile) async {
     int bytes = await imageFile.length();
     if (bytes > 2 * 1024 * 1024) {
-      final compressedImage = await _compressImage(imageFile, 2 * 1024 * 1024);
-      if (compressedImage != null) {
-        imageFile.writeAsBytesSync(compressedImage);
+      final compressedFile =
+          await _apiClient.compressImage(imageFile, 2 * 1024 * 1024);
+      if (compressedFile != null) {
+        imageFile.writeAsBytesSync(compressedFile.readAsBytesSync());
         return true;
       }
       return false;
     }
     return true;
-  }
-
-  Future<List<int>?> _compressImage(File file, int maxSize) async {
-    final image = img.decodeImage(file.readAsBytesSync());
-    if (image == null) {
-      return null;
-    }
-    int quality = 100;
-    List<int> compressedBytes;
-    do {
-      compressedBytes = img.encodeJpg(image, quality: quality);
-      quality -= 10;
-    } while (compressedBytes.length > maxSize && quality > 0);
-    return compressedBytes.length <= maxSize ? compressedBytes : null;
   }
 
   Future<void> _fetchAddressFromCep(String cep) async {

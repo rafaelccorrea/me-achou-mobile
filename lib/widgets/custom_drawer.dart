@@ -1,5 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:meachou/components/loading/loading_dots.dart';
+import 'package:meachou/providers/app_drawer_provider.dart';
 import 'package:meachou/screens/follow/followers_screen.dart';
 import 'package:meachou/screens/profile_screen.dart';
 import 'package:meachou/screens/store/create_store_screen.dart';
@@ -12,14 +17,19 @@ class CustomDrawer extends StatefulWidget {
   final bool isOpen;
   final VoidCallback toggleDrawer;
   final String userName;
-  final String? userAvatarUrl;
+  String? userAvatarUrl;
+  final Function(String) onUpdateUserName;
+  final Function(String) onUpdateUserAvatar;
 
-  const CustomDrawer({
+  CustomDrawer({
+    Key? key,
     required this.isOpen,
     required this.toggleDrawer,
     required this.userName,
     this.userAvatarUrl,
-  });
+    required this.onUpdateUserName,
+    required this.onUpdateUserAvatar,
+  }) : super(key: key);
 
   @override
   _CustomDrawerState createState() => _CustomDrawerState();
@@ -30,6 +40,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   final ValueNotifier<String?> _subscriptionStatusNotifier =
       ValueNotifier<String?>('NONE');
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
+  final TextEditingController _nameController = TextEditingController();
 
   @override
   void initState() {
@@ -42,6 +53,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     });
 
     _loadInitialSubscriptionStatus();
+    _nameController.text = widget.userName;
   }
 
   Future<void> _loadInitialSubscriptionStatus() async {
@@ -75,125 +87,185 @@ class _CustomDrawerState extends State<CustomDrawer> {
     _subscriptionStatusNotifier.value = status;
   }
 
+  void _changeUserName() {
+    String newName = _nameController.text;
+    if (newName.isNotEmpty) {
+      widget.onUpdateUserName(newName);
+    }
+  }
+
+  void _changeUserAvatar() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        widget.userAvatarUrl = image.path;
+      });
+      widget.onUpdateUserAvatar(image.path);
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Erro'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthService>(
-      builder: (context, authService, child) {
-        return FutureBuilder<Map<String, dynamic>?>(
-          future: authService.getUser(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return const Drawer(
-                child: Center(
-                    child: Text('Erro ao carregar informações do usuário')),
-              );
-            } else {
-              return ValueListenableBuilder<String?>(
-                valueListenable: _subscriptionStatusNotifier,
-                builder: (context, subscriptionStatus, child) {
-                  return Drawer(
-                    child: Container(
-                      color: Colors.white,
-                      child: Column(
-                        children: <Widget>[
-                          _buildDrawerHeader(context),
-                          _buildUserInfoSection(),
-                          if (snapshot.data?['store'] != null &&
-                              subscriptionStatus != 'NONE')
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Status da assinatura: ',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Icon(
-                                      subscriptionStatus == 'ACTIVE'
-                                          ? Icons.check_circle
-                                          : Icons.cancel,
-                                      color: subscriptionStatus == 'ACTIVE'
-                                          ? Colors.green
-                                          : Colors.red,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      subscriptionStatus == 'ACTIVE'
-                                          ? 'Ativa'
-                                          : 'Inativa',
-                                      style: TextStyle(
-                                        color: subscriptionStatus == 'ACTIVE'
-                                            ? Colors.green
-                                            : Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          Divider(color: Colors.grey[300], thickness: 0.5),
-                          Expanded(
-                            child: SingleChildScrollView(
+    return Consumer<DrawerProvider>(
+      builder: (context, drawerProvider, child) {
+        return Consumer<AuthService>(
+          builder: (context, authService, child) {
+            return FutureBuilder<Map<String, dynamic>?>(
+              future: authService.getUser(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return const Drawer(
+                    child: Center(
+                        child: Text('Erro ao carregar informações do usuário')),
+                  );
+                } else {
+                  return ValueListenableBuilder<String?>(
+                    valueListenable: _subscriptionStatusNotifier,
+                    builder: (context, subscriptionStatus, child) {
+                      return Stack(
+                        children: [
+                          Drawer(
+                            child: Container(
+                              color: Colors.white,
                               child: Column(
-                                children: [
-                                  _buildDrawerItem(
-                                    context,
-                                    icon: Icons.person,
-                                    text: 'Meu Perfil',
-                                    onTap: () => _navigateTo(
-                                        context, const ProfileScreen()),
-                                  ),
-                                  _buildDrawerItem(context,
-                                      icon: Icons.star_rate,
-                                      text: 'Avaliações'),
-                                  _buildDrawerItem(context,
-                                      icon: Icons.article, text: 'Publicações'),
-                                  _buildDrawerItem(
-                                    context,
-                                    icon: Icons.group,
-                                    text: 'Seguindo',
-                                    onTap: () =>
-                                        _navigateTo(context, FollowersScreen()),
-                                  ),
-                                  _buildDrawerItem(context,
-                                      icon: Icons.event_available,
-                                      text: 'Eventos'),
-                                  if (snapshot.data?['store'] != null)
-                                    _buildStoreSection(subscriptionStatus),
-                                  if (snapshot.data?['store'] == null)
-                                    _buildDrawerItem(
-                                      context,
-                                      icon: Icons.store,
-                                      text: 'Criar Loja',
-                                      onTap: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                CreateStoreScreen(),
-                                          ),
-                                        );
-                                      },
+                                children: <Widget>[
+                                  _buildDrawerHeader(context),
+                                  _buildUserInfoSection(
+                                      drawerProvider.userName),
+                                  if (snapshot.data?['store'] != null &&
+                                      subscriptionStatus != 'NONE')
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Center(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              'Status da assinatura: ',
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Icon(
+                                              subscriptionStatus == 'ACTIVE'
+                                                  ? Icons.check_circle
+                                                  : Icons.cancel,
+                                              color:
+                                                  subscriptionStatus == 'ACTIVE'
+                                                      ? Colors.green
+                                                      : Colors.red,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              subscriptionStatus == 'ACTIVE'
+                                                  ? 'Ativa'
+                                                  : 'Inativa',
+                                              style: TextStyle(
+                                                color: subscriptionStatus ==
+                                                        'ACTIVE'
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
+                                  Divider(
+                                      color: Colors.grey[300], thickness: 0.5),
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        children: [
+                                          _buildDrawerItem(
+                                            context,
+                                            icon: Icons.person,
+                                            text: 'Meu Perfil',
+                                            onTap: () => _navigateTo(
+                                                context, const ProfileScreen()),
+                                          ),
+                                          _buildDrawerItem(context,
+                                              icon: Icons.star_rate,
+                                              text: 'Avaliações'),
+                                          _buildDrawerItem(context,
+                                              icon: Icons.article,
+                                              text: 'Publicações'),
+                                          _buildDrawerItem(
+                                            context,
+                                            icon: Icons.group,
+                                            text: 'Seguindo',
+                                            onTap: () => _navigateTo(
+                                                context, FollowersScreen()),
+                                          ),
+                                          _buildDrawerItem(context,
+                                              icon: Icons.event_available,
+                                              text: 'Eventos'),
+                                          if (snapshot.data?['store'] != null)
+                                            _buildStoreSection(
+                                                subscriptionStatus),
+                                          if (snapshot.data?['store'] == null)
+                                            _buildDrawerItem(
+                                              context,
+                                              icon: Icons.store,
+                                              text: 'Criar Loja',
+                                              onTap: () {
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        CreateStoreScreen(),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                           ),
+                          if (drawerProvider.isLoading)
+                            Container(
+                              color: Colors.black.withOpacity(0.5),
+                              child: const Center(
+                                child: LoadingDots(),
+                              ),
+                            ),
                         ],
-                      ),
-                    ),
+                      );
+                    },
                   );
-                },
-              );
-            }
+                }
+              },
+            );
           },
         );
       },
@@ -213,33 +285,96 @@ class _CustomDrawerState extends State<CustomDrawer> {
     );
   }
 
-  Widget _buildUserInfoSection() {
+  Widget _buildUserInfoSection(String userName) {
     return Container(
       padding: EdgeInsets.zero,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: 10),
-          CircleAvatar(
-            radius: 40,
-            backgroundImage: widget.userAvatarUrl != null
-                ? NetworkImage(widget.userAvatarUrl!)
-                : const AssetImage('assets/default_avatar.png')
-                    as ImageProvider,
-            backgroundColor: Colors.grey[300],
+          Stack(
+            children: [
+              CircleAvatar(
+                radius: 40,
+                backgroundImage: _getImageProvider(),
+                backgroundColor: Colors.grey[300],
+              ),
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.center,
+                  child: IconButton(
+                    icon: const Icon(Icons.camera_alt, color: Colors.white),
+                    onPressed: _changeUserAvatar,
+                    iconSize: 24,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
-          Text(
-            widget.userName,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                userName,
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.grey),
+                onPressed: () => _showEditNameDialog(),
+                iconSize: 16,
+              ),
+            ],
           ),
           const SizedBox(height: 8),
         ],
       ),
+    );
+  }
+
+  ImageProvider _getImageProvider() {
+    if (widget.userAvatarUrl != null) {
+      if (widget.userAvatarUrl!.startsWith('http')) {
+        return NetworkImage(widget.userAvatarUrl!);
+      } else {
+        return FileImage(File(widget.userAvatarUrl!));
+      }
+    } else {
+      return const AssetImage('assets/default_avatar.png');
+    }
+  }
+
+  void _showEditNameDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Editar Nome'),
+          content: TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(hintText: 'Digite o novo nome'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Salvar'),
+              onPressed: () {
+                _changeUserName();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
