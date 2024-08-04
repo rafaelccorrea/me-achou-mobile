@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       drawerProvider.setLoading(true);
       await userService.updateUserName(newName);
-      drawerProvider.userName = newName; // Atualize o nome no DrawerProvider
+      drawerProvider.userName = newName;
     } catch (e) {
       print('Erro ao atualizar o nome: $e');
     } finally {
@@ -124,8 +124,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final avatar = user['avatar'];
         final name = user['name'];
 
-        // Defina o nome do usuário no DrawerProvider
-        Provider.of<DrawerProvider>(context, listen: false).userName = name;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Provider.of<DrawerProvider>(context, listen: false).userName = name;
+        });
 
         return Scaffold(
           key: _scaffoldKey,

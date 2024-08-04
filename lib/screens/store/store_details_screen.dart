@@ -144,9 +144,11 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildProfileHeader(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(14.0),
+              child: _buildProfileHeader(),
+            ),
           ),
           _buildStats(),
         ],
@@ -259,29 +261,38 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
   Widget _buildStats() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem('Publicações', '120'),
-          _buildStatItem('Avaliações', '4.5K'),
-          _buildStatItem('Seguidores', '2.3K'),
-        ],
+      child: IntrinsicHeight(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildStatItem('Publicações', '120'),
+            _buildStatItem('Avaliações', '4.5K'),
+            _buildStatItem('Seguidores', '2.3K'),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildStatItem(String label, String count) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           count,
           style: GoogleFonts.lato(
-              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black54),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black54,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: GoogleFonts.lato(fontSize: 16, color: Colors.black54),
+          style: GoogleFonts.lato(
+            fontSize: 16,
+            color: Colors.black54,
+          ),
         ),
       ],
     );
