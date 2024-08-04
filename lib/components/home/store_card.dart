@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:meachou/screens/store/store_details_screen.dart';
 
 class StoreCard extends StatelessWidget {
   final Map<String, dynamic> store;
@@ -18,102 +19,112 @@ class StoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 34,
-            backgroundImage: store['profile_picture'] != null
-                ? NetworkImage(store['profile_picture'])
-                : const NetworkImage(
-                    'https://www.logodesignlove.com/wp-content/uploads/2023/10/playstation-logo-01.jpeg',
-                  ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StoreProfileScreen(storeId: store['id']),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  store['company_name'],
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatRegion(store['address']['region']) ??
-                      'Região não especificada',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                _buildStarRating(store['ranking'].toDouble()),
-                const SizedBox(
-                    height: 4), // Add space between stars and review count
-                Text(
-                  '(${store['reviewCount']} avaliações)',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 34,
+              backgroundImage: store['profile_picture'] != null
+                  ? NetworkImage(store['profile_picture'])
+                  : const NetworkImage(
+                      'https://www.logodesignlove.com/wp-content/uploads/2023/10/playstation-logo-01.jpeg',
+                    ),
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              if (store['isFollowed'] == true) {
-                unfollowStore(store['id']);
-              } else {
-                followStore(store['id']);
-              }
-            },
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(
-                  store['isFollowed'] == true || isOwnStore
-                      ? Icons.favorite
-                      : Icons.favorite_border,
-                  color: store['isFollowed'] == true || isOwnStore
-                      ? Colors.red
-                      : null,
-                ),
-                if (confettiControllers[store['id']] != null)
-                  ConfettiWidget(
-                    confettiController: confettiControllers[store['id']]!,
-                    blastDirectionality: BlastDirectionality.explosive,
-                    emissionFrequency: 0.1,
-                    numberOfParticles: 10,
-                    maxBlastForce: 20,
-                    minBlastForce: 5,
-                    gravity: 0.1,
-                    colors: const [
-                      Colors.red,
-                      Colors.orange,
-                      Colors.yellow,
-                      Colors.blue,
-                      Colors.green
-                    ],
-                    shouldLoop: false,
-                    particleDrag: 0.05,
-                    child: const Icon(
-                      Icons.star,
-                      color: Colors.transparent,
-                      size: 10,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    store['company_name'],
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatRegion(store['address']['region']) ??
+                        'Região não especificada',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  _buildStarRating(store['ranking'].toDouble()),
+                  const SizedBox(
+                      height: 4), // Add space between stars and review count
+                  Text(
+                    '(${store['reviewCount']} avaliações)',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            GestureDetector(
+              onTap: () {
+                if (store['isFollowed'] == true) {
+                  unfollowStore(store['id']);
+                } else {
+                  followStore(store['id']);
+                }
+              },
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(
+                    store['isFollowed'] == true || isOwnStore
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: store['isFollowed'] == true || isOwnStore
+                        ? Colors.red
+                        : null,
+                  ),
+                  if (confettiControllers[store['id']] != null)
+                    ConfettiWidget(
+                      confettiController: confettiControllers[store['id']]!,
+                      blastDirectionality: BlastDirectionality.explosive,
+                      emissionFrequency: 0.1,
+                      numberOfParticles: 10,
+                      maxBlastForce: 20,
+                      minBlastForce: 5,
+                      gravity: 0.1,
+                      colors: const [
+                        Colors.red,
+                        Colors.orange,
+                        Colors.yellow,
+                        Colors.blue,
+                        Colors.green
+                      ],
+                      shouldLoop: false,
+                      particleDrag: 0.05,
+                      child: const Icon(
+                        Icons.star,
+                        color: Colors.transparent,
+                        size: 10,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

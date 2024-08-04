@@ -47,5 +47,12 @@
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Por que meu app está autenticando usando Face ID?</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>mailto</string>
+		<string>https</string>
+		<string>http</string>
+	</array>
 </dict>
 </plist>

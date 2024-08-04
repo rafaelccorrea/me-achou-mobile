@@ -1,17 +1,17 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:meachou/components/loading/loading_dots.dart';
-import 'package:meachou/providers/app_drawer_provider.dart';
 import 'package:meachou/screens/follow/followers_screen.dart';
-import 'package:meachou/screens/profile_screen.dart';
 import 'package:meachou/screens/store/create_store_screen.dart';
+import 'package:meachou/screens/store/store_details_screen.dart';
 import 'package:meachou/screens/subscription/subscription_screen.dart';
+import 'package:meachou/services/subscription_client.dart';
 import 'package:provider/provider.dart';
 import 'package:meachou/services/auth_service.dart';
-import 'package:meachou/services/subscription_client.dart';
+import 'package:meachou/screens/profile_screen.dart';
+import 'package:meachou/components/loading/loading_dots.dart';
+import 'package:meachou/providers/app_drawer_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class CustomDrawer extends StatefulWidget {
   final bool isOpen;
@@ -229,7 +229,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                               text: 'Eventos'),
                                           if (snapshot.data?['store'] != null)
                                             _buildStoreSection(
-                                                subscriptionStatus),
+                                                subscriptionStatus,
+                                                snapshot.data!['store'][
+                                                    'id']), // Adiciona ID da loja aqui
                                           if (snapshot.data?['store'] == null)
                                             _buildDrawerItem(
                                               context,
@@ -387,12 +389,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
     );
   }
 
-  Widget _buildStoreSection(String? subscriptionStatus) {
-    print('############### $subscriptionStatus');
+  Widget _buildStoreSection(String? subscriptionStatus, String storeId) {
     if (subscriptionStatus == 'ACTIVE') {
-      return _buildExpansionTileForActiveSubscription(context);
+      return _buildExpansionTileForActiveSubscription(context, storeId);
     } else if (subscriptionStatus == 'INACTIVE') {
-      return _buildExpansionTileForInactiveSubscription(context);
+      return _buildExpansionTileForInactiveSubscription(context, storeId);
     } else {
       return _buildExpansionTileForNoSubscription(context);
     }
@@ -413,14 +414,20 @@ class _CustomDrawerState extends State<CustomDrawer> {
     );
   }
 
-  Widget _buildExpansionTileForActiveSubscription(BuildContext context) {
+  Widget _buildExpansionTileForActiveSubscription(
+      BuildContext context, String storeId) {
     return _buildExpansionTile(
       context,
       icon: Icons.store,
       text: 'Minha Loja',
       children: [
         _buildDrawerSubItem(context,
-            icon: Icons.person_outline, text: 'Perfil'),
+            icon: Icons.person_outline,
+            text: 'Perfil',
+            onTap: () => _navigateTo(
+                context,
+                StoreProfileScreen(
+                    storeId: storeId))), // Navega para a tela de perfil da loja
         _buildDrawerSubItem(context,
             icon: Icons.article_outlined, text: 'Publicações'),
         _buildDrawerSubItem(context,
@@ -437,14 +444,20 @@ class _CustomDrawerState extends State<CustomDrawer> {
     );
   }
 
-  Widget _buildExpansionTileForInactiveSubscription(BuildContext context) {
+  Widget _buildExpansionTileForInactiveSubscription(
+      BuildContext context, String storeId) {
     return _buildExpansionTile(
       context,
       icon: Icons.store,
       text: 'Minha Loja',
       children: [
         _buildDrawerSubItem(context,
-            icon: Icons.person_outline, text: 'Perfil'),
+            icon: Icons.person_outline,
+            text: 'Perfil',
+            onTap: () => _navigateTo(
+                context,
+                StoreProfileScreen(
+                    storeId: storeId))), // Navega para a tela de perfil da loja
         _buildDrawerSubItem(context,
             icon: Icons.subscriptions,
             text: 'Assinatura',

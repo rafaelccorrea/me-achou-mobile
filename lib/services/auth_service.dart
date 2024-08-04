@@ -61,24 +61,35 @@ class AuthService {
   }
 
   Future<bool> _checkUserStore() async {
-    final String? token = await getAccessToken();
-    final uri = Uri.parse(ApiConstants.storeDetailsEndpoint);
+    final userJson = await secureStorage.read(key: 'user');
+    if (userJson != null) {
+      final user = json.decode(userJson);
+      final storeId = user['store']['id'];
 
-    final response = await http.get(
-      uri,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token',
-      },
-    );
+      if (storeId != null) {
+        final String endpoint =
+            ApiConstants.storeDetailsEndpoint.replaceFirst(':storeId', storeId);
+        final uri = Uri.parse(endpoint);
+        final String? token = await getAccessToken();
 
-    if (response.statusCode == 200) {
-      return true;
-    } else if (response.statusCode == 404) {
-      return false;
-    } else {
-      throw Exception('Failed to check store details');
+        final response = await http.get(
+          uri,
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          return true;
+        } else if (response.statusCode == 404) {
+          return false;
+        } else {
+          throw Exception('Failed to check store details');
+        }
+      }
     }
+    return false;
   }
 
   Future<Map<String, dynamic>?> getUser() async {

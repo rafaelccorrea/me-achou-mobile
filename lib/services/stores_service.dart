@@ -47,8 +47,10 @@ class StoreService {
     return await apiClient.get(uri.toString());
   }
 
-  Future<Map<String, dynamic>?> getStoreDetails() async {
-    final uri = Uri.parse(ApiConstants.storeDetailsEndpoint);
+  Future<Map<String, dynamic>?> getStoreDetails(String storeId) async {
+    final String endpoint =
+        ApiConstants.storeDetailsEndpoint.replaceFirst(':storeId', storeId);
+    final uri = Uri.parse(endpoint);
     final response = await apiClient.get(uri.toString());
 
     if (response.statusCode == 200) {

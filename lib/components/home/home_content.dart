@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:convert';
 import 'package:meachou/components/home/event_carousel.dart';
@@ -40,7 +41,6 @@ class _HomeContentState extends State<HomeContent>
   int currentPage = 1;
   final ScrollController _scrollController = ScrollController();
 
-  CancelableOperation<void>? _fetchUserStoreIdOperation;
   CancelableOperation<void>? _fetchStoresOperation;
 
   @override
@@ -48,13 +48,15 @@ class _HomeContentState extends State<HomeContent>
     super.initState();
     _scrollController.addListener(_onScroll);
     applyFilters(widget.filters);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchUserStoreId();
+    });
   }
 
   @override
   void dispose() {
     _confettiControllers.forEach((key, controller) => controller.dispose());
     _scrollController.dispose();
-    _fetchUserStoreIdOperation?.cancel();
     _fetchStoresOperation?.cancel();
     super.dispose();
   }
@@ -75,18 +77,23 @@ class _HomeContentState extends State<HomeContent>
     if (!mounted) return;
 
     try {
-      final response = await storeService
-          .getStoreDetails()
-          .timeout(const Duration(seconds: 10));
+      final secureStorage = FlutterSecureStorage();
+      final userJson = await secureStorage.read(key: 'user');
+      if (userJson != null) {
+        final user = json.decode(userJson);
+        final storeId = user['store']['id'];
 
-      if (response is Map<String, dynamic> && response.containsKey('id')) {
-        if (mounted) {
-          setState(() {
-            userStoreId = response['id'];
-          });
+        if (storeId != null) {
+          final storeDetails = await storeService.getStoreDetails(storeId);
+
+          if (storeDetails != null && mounted) {
+            setState(() {
+              userStoreId = storeId;
+            });
+          } else {
+            throw Exception('Failed to load user store ID');
+          }
         }
-      } else {
-        throw Exception('Failed to load user store ID');
       }
     } catch (e) {
       _showErrorToast('Erro ao carregar ID da loja do usuário.');

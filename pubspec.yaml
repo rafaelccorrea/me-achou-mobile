@@ -34,6 +34,7 @@ dependencies:
   cpf_cnpj_validator: ^2.0.0
   credit_card_validator: ^2.1.0
   image: ^3.0.1
+  url_launcher: ^6.0.20
 
 dev_dependencies:
   flutter_test:
@@ -48,4 +49,3 @@ flutter:
     - assets/background_image.jpg
     - assets/no_stores.png
     - assets/animation/
-
