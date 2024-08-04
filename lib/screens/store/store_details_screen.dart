@@ -76,15 +76,35 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
                   _buildHeader(),
                   const SizedBox(height: 16),
                   _buildBusinessInfo(),
-                  const SizedBox(height: 16),
-                  if (_hasContactInfo()) _buildExpandableContactInfo(context),
-                  const SizedBox(height: 16),
-                  if (_hasSocialNetworks())
-                    _buildSocialNetworksSection(context),
-                  const SizedBox(height: 16),
-                  if (_hasServiceValues())
-                    _buildWorkingHoursAndServicesSection(context),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 2),
+                  Visibility(
+                    visible: _hasContactInfo(),
+                    child: Column(
+                      children: [
+                        _buildExpandableContactInfo(context),
+                        const SizedBox(height: 2),
+                      ],
+                    ),
+                  ),
+                  Visibility(
+                    visible: _hasSocialNetworks(),
+                    child: Column(
+                      children: [
+                        _buildSocialNetworksSection(context),
+                        const SizedBox(height: 2),
+                      ],
+                    ),
+                  ),
+                  Visibility(
+                    visible: _hasServiceValues(),
+                    child: Column(
+                      children: [
+                        _buildWorkingHoursAndServicesSection(context),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   _buildPhotosSection(),
                   const SizedBox(height: 32),
                 ],
