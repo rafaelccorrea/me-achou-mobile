@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:shimmer/shimmer.dart';
 
 class EventCarousel extends StatelessWidget {
   final List<dynamic> events;
@@ -177,7 +178,35 @@ class EventCarousel extends StatelessWidget {
                       ),
                       child: CircleAvatar(
                         radius: 40,
-                        backgroundImage: NetworkImage(event['image']),
+                        backgroundColor: Colors.grey[300],
+                        child: ClipOval(
+                          child: Image.network(
+                            event['image'],
+                            fit: BoxFit.cover,
+                            width: 80.0,
+                            height: 80.0,
+                            loadingBuilder: (BuildContext context, Widget child,
+                                ImageChunkEvent? loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              } else {
+                                return Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    width: 80.0,
+                                    height: 80.0,
+                                    color: Colors.grey[300],
+                                  ),
+                                );
+                              }
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.event,
+                                  size: 40, color: Colors.white);
+                            },
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 5.0),

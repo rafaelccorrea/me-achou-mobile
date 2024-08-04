@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:meachou/screens/store/store_details_screen.dart';
+import 'package:shimmer/shimmer.dart';
 
 class StoreCard extends StatelessWidget {
   final Map<String, dynamic> store;
@@ -35,11 +36,37 @@ class StoreCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 34,
-              backgroundImage: store['profile_picture'] != null
-                  ? NetworkImage(store['profile_picture'])
-                  : const NetworkImage(
-                      'https://www.logodesignlove.com/wp-content/uploads/2023/10/playstation-logo-01.jpeg',
-                    ),
+              backgroundColor: Colors.grey[300],
+              child: ClipOval(
+                child: store['profile_picture'] != null
+                    ? Image.network(
+                        store['profile_picture'],
+                        fit: BoxFit.cover,
+                        width: 68.0,
+                        height: 68.0,
+                        loadingBuilder: (BuildContext context, Widget child,
+                            ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          } else {
+                            return Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                width: 68.0,
+                                height: 68.0,
+                                color: Colors.grey[300],
+                              ),
+                            );
+                          }
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.person,
+                              size: 34, color: Colors.white);
+                        },
+                      )
+                    : const Icon(Icons.person, size: 34, color: Colors.white),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(

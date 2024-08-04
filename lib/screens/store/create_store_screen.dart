@@ -61,7 +61,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
     'Educação'
   ];
   List<String> socialNetworks = [];
-  List<File> photos = []; // Ensure this is List<File>
+  List<File> photos = [];
   bool delivery = false;
   bool inHomeService = false;
 
@@ -113,8 +113,6 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
 
       final response = await _storeService.createStore(storeData,
           profilePicture: _profileImage);
-
-      print('@@@@@@@@@@@@@@@@ ${response.body}');
 
       if (response.statusCode == 201) {
         try {
@@ -188,7 +186,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
         final imageFile = File(file.path);
         if (await _validateAndCompressImage(imageFile)) {
           setState(() {
-            photos.add(imageFile); // Add as File
+            photos.add(imageFile);
           });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -434,7 +432,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                   icon: FontAwesomeIcons.dollarSign,
                   iconColor: Colors.green,
                   isNumeric: true,
-                  validator: null,
+                  validator:
+                      null, // Removendo a validação para não ser obrigatório
                   onChanged: (value) {
                     if (value.isEmpty) {
                       _serviceValuesController.clear();
@@ -569,9 +568,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                 ),
                 CustomPhotoPickerField(
                   labelText: 'Fotos do ambiente',
-                  photos: photos
-                      .map((file) => file.path)
-                      .toList(), // Convert File to path string
+                  photos: photos.map((file) => file.path).toList(),
                   onTap: _pickImages,
                   icon: FontAwesomeIcons.camera,
                   iconColor: Colors.purple,

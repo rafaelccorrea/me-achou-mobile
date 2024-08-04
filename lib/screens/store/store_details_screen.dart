@@ -1,11 +1,11 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:meachou/components/loading/loading_dots.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:meachou/services/stores_service.dart';
+import 'package:shimmer/shimmer.dart';
 
 class StoreProfileScreen extends StatefulWidget {
   final String storeId;
@@ -87,11 +87,12 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
             const SizedBox(height: 16),
             _buildBusinessInfo(),
             const SizedBox(height: 16),
-            _buildExpandableContactInfo(context),
+            if (_hasContactInfo()) _buildExpandableContactInfo(context),
             const SizedBox(height: 16),
-            _buildSocialNetworksSection(context),
+            if (_hasSocialNetworks()) _buildSocialNetworksSection(context),
             const SizedBox(height: 16),
-            _buildWorkingHoursAndServicesSection(context),
+            if (_hasServiceValues())
+              _buildWorkingHoursAndServicesSection(context),
             const SizedBox(height: 16),
             _buildPhotosSection(),
             const SizedBox(height: 32),
@@ -149,12 +150,39 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
             _showImageDialog(
                 store!['profile_picture'] ?? 'assets/default_avatar.png');
           },
-          child: CircleAvatar(
-            radius: 50,
-            backgroundImage: store!['profile_picture'] != null
-                ? NetworkImage(store!['profile_picture'])
-                : const AssetImage('assets/default_avatar.png')
-                    as ImageProvider,
+          child: Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.grey[300],
+              child: store!['profile_picture'] != null
+                  ? ClipOval(
+                      child: Image.network(
+                        store!['profile_picture'],
+                        fit: BoxFit.cover,
+                        width: 100.0,
+                        height: 100.0,
+                        loadingBuilder: (BuildContext context, Widget child,
+                            ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          } else {
+                            return Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                width: 100.0,
+                                height: 100.0,
+                                color: Colors.grey[300],
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    )
+                  : const Icon(Icons.person, size: 50, color: Colors.white),
+            ),
           ),
         ),
         const SizedBox(width: 20),
@@ -270,11 +298,16 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              Text(
-                store!['about'] ?? 'O lojista não forneceu mais detalhes...',
-                style: GoogleFonts.lato(
-                  fontSize: 14,
-                  color: Colors.black54,
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  store!['about']?.isNotEmpty == true
+                      ? store!['about']
+                      : 'O lojista não forneceu mais detalhes...',
+                  style: GoogleFonts.lato(
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
                 ),
               ),
             ],
@@ -296,7 +329,8 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
         child: Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-            tilePadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            tilePadding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             title: Text(
               'Informações de Contato',
               style: GoogleFonts.lato(
@@ -306,28 +340,32 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
               ),
             ),
             children: [
-              _buildProfileDetail(
-                icon: FontAwesomeIcons.phone,
-                value: store!['contact_phone'] ?? 'Não disponível',
-                onTap: () => _launchURL(
-                    'tel:${_cleanPhoneNumber(store!['contact_phone'])}'),
-              ),
-              _buildProfileDetail(
-                icon: FontAwesomeIcons.whatsapp,
-                value: store!['whatsapp_phone'] ?? 'Não disponível',
-                onTap: () => _launchURL(
-                    'https://wa.me/${_cleanPhoneNumber(store!['whatsapp_phone'])}?text=Olá'),
-              ),
-              _buildProfileDetail(
-                icon: FontAwesomeIcons.link,
-                value: store!['website'] ?? 'Não disponível',
-                onTap: () => _launchURL(_formatURL(store!['website'])),
-              ),
-              _buildProfileDetail(
-                icon: FontAwesomeIcons.envelope,
-                value: store!['email'] ?? 'Não disponível',
-                onTap: () => _launchURL('mailto:${store!['email']}'),
-              ),
+              if (store!['contact_phone']?.isNotEmpty == true)
+                _buildProfileDetail(
+                  icon: FontAwesomeIcons.phone,
+                  value: store!['contact_phone']!,
+                  onTap: () => _launchURL(
+                      'tel:${_cleanPhoneNumber(store!['contact_phone']!)}'),
+                ),
+              if (store!['whatsapp_phone']?.isNotEmpty == true)
+                _buildProfileDetail(
+                  icon: FontAwesomeIcons.whatsapp,
+                  value: store!['whatsapp_phone']!,
+                  onTap: () => _launchURL(
+                      'https://wa.me/${_cleanPhoneNumber(store!['whatsapp_phone']!)}?text=Olá'),
+                ),
+              if (store!['website']?.isNotEmpty == true)
+                _buildProfileDetail(
+                  icon: FontAwesomeIcons.link,
+                  value: store!['website']!,
+                  onTap: () => _launchURL(_formatURL(store!['website']!)),
+                ),
+              if (store!['email']?.isNotEmpty == true)
+                _buildProfileDetail(
+                  icon: FontAwesomeIcons.envelope,
+                  value: store!['email']!,
+                  onTap: () => _launchURL('mailto:${store!['email']}'),
+                ),
             ],
           ),
         ),
@@ -336,6 +374,12 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
   }
 
   Widget _buildSocialNetworksSection(BuildContext context) {
+    final socialNetworks = store!['social_networks'] as List<dynamic>?;
+
+    if (socialNetworks == null || socialNetworks.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Card(
@@ -347,7 +391,8 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
         child: Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-            tilePadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            tilePadding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             title: Text(
               'Redes Sociais',
               style: GoogleFonts.lato(
@@ -356,7 +401,7 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
                 color: Colors.black54,
               ),
             ),
-            children: (store!['social_networks'] as List<dynamic>)
+            children: socialNetworks
                 .map((network) => Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14.4, vertical: 7.2),
@@ -417,7 +462,8 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
         child: Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-            tilePadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            tilePadding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             title: Text(
               'Horário e Serviços',
               style: GoogleFonts.lato(
@@ -466,12 +512,14 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
                     : 'Indisponível',
                 available: store!['in_home_service'] == true,
               ),
-              _buildServiceDetail(
-                icon: FontAwesomeIcons.dollarSign,
-                label: 'Valor do Serviço',
-                value: 'R\$ ${store!['service_values']}',
-                available: true,
-              ),
+              if (store!['service_values'] != null &&
+                  store!['service_values'] != 'NaN')
+                _buildServiceDetail(
+                  icon: FontAwesomeIcons.dollarSign,
+                  label: 'Valor do Serviço',
+                  value: 'R\$ ${store!['service_values']}',
+                  available: true,
+                ),
             ],
           ),
         ),
@@ -543,6 +591,22 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
             child: Image.network(
               photo['url'],
               fit: BoxFit.cover,
+              loadingBuilder: (BuildContext context, Widget child,
+                  ImageChunkEvent? loadingProgress) {
+                if (loadingProgress == null) {
+                  return child;
+                } else {
+                  return Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: Colors.white,
+                    ),
+                  );
+                }
+              },
             ),
           ),
         ),
@@ -659,5 +723,22 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
       return 'http://$url';
     }
     return url;
+  }
+
+  bool _hasContactInfo() {
+    return store!['contact_phone']?.isNotEmpty == true ||
+        store!['whatsapp_phone']?.isNotEmpty == true ||
+        store!['website']?.isNotEmpty == true ||
+        store!['email']?.isNotEmpty == true;
+  }
+
+  bool _hasSocialNetworks() {
+    final socialNetworks = store!['social_networks'] as List<dynamic>?;
+    return socialNetworks != null && socialNetworks.isNotEmpty;
+  }
+
+  bool _hasServiceValues() {
+    return store!['service_values'] != null &&
+        store!['service_values'] != 'NaN';
   }
 }

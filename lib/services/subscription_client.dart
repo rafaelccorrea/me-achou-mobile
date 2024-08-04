@@ -112,7 +112,6 @@ class SubscriptionClient {
           }
         }),
       );
-      print("#########################3 ${response.body}");
       if (response.statusCode == 201) {
         final jsonData = json.decode(response.body);
 
