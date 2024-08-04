@@ -466,6 +466,12 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
                     : 'Indisponível',
                 available: store!['in_home_service'] == true,
               ),
+              _buildServiceDetail(
+                icon: FontAwesomeIcons.dollarSign,
+                label: 'Valor do Serviço',
+                value: 'R\$ ${store!['service_values']}',
+                available: true,
+              ),
             ],
           ),
         ),
