@@ -64,9 +64,10 @@ class AuthService {
     final userJson = await secureStorage.read(key: 'user');
     if (userJson != null) {
       final user = json.decode(userJson);
-      final storeId = user['store']['id'];
+      final store = user['store'];
 
-      if (storeId != null) {
+      if (store != null && store['id'] != null) {
+        final storeId = store['id'];
         final String endpoint =
             ApiConstants.storeDetailsEndpoint.replaceFirst(':storeId', storeId);
         final uri = Uri.parse(endpoint);
