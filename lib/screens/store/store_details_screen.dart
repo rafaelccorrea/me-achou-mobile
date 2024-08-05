@@ -109,6 +109,8 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
                   PhotosSection(
                       store: store!, onTap: (url) => _showImageDialog(url)),
                   const SizedBox(height: 32),
+                  AddressSection(address: store!['address']),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),

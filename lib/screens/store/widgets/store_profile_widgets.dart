@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class StoreProfileHeader extends StatelessWidget {
   final Map<String, dynamic> store;
@@ -52,7 +54,11 @@ class StoreProfileHeader extends StatelessWidget {
               ),
             ),
           ),
-          Stats(store: store),
+          Stats(
+            publicationCount: store['publicationCount'],
+            reviewCount: store['reviewCount'],
+            followerCount: store['followerCount'],
+          ),
         ],
       ),
     );
@@ -189,9 +195,16 @@ class StarRating extends StatelessWidget {
 }
 
 class Stats extends StatelessWidget {
-  final Map<String, dynamic> store;
+  final int publicationCount;
+  final int reviewCount;
+  final int followerCount;
 
-  const Stats({Key? key, required this.store}) : super(key: key);
+  const Stats({
+    Key? key,
+    required this.publicationCount,
+    required this.reviewCount,
+    required this.followerCount,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -201,9 +214,9 @@ class Stats extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            StatItem(label: 'Publicações', count: '120'),
-            StatItem(label: 'Avaliações', count: '4.5K'),
-            StatItem(label: 'Seguidores', count: '2.3K'),
+            StatItem(label: 'Publicações', count: publicationCount),
+            StatItem(label: 'Avaliações', count: reviewCount),
+            StatItem(label: 'Seguidores', count: followerCount),
           ],
         ),
       ),
@@ -213,7 +226,7 @@ class Stats extends StatelessWidget {
 
 class StatItem extends StatelessWidget {
   final String label;
-  final String count;
+  final int count;
 
   const StatItem({Key? key, required this.label, required this.count})
       : super(key: key);
@@ -223,13 +236,19 @@ class StatItem extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          count,
-          style: GoogleFonts.lato(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black54,
-          ),
+        TweenAnimationBuilder<int>(
+          tween: IntTween(begin: 0, end: count),
+          duration: const Duration(seconds: 2),
+          builder: (BuildContext context, int value, Widget? child) {
+            return Text(
+              value.toString(),
+              style: GoogleFonts.lato(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+              ),
+            );
+          },
         ),
         const SizedBox(height: 4),
         Text(
@@ -737,6 +756,71 @@ class ProfileDetail extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class AddressSection extends StatelessWidget {
+  final Map<String, dynamic> address;
+
+  const AddressSection({Key? key, required this.address}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Endereço',
+            style: GoogleFonts.lato(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(FontAwesomeIcons.mapMarkerAlt,
+                  color: Colors.blueAccent, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                '${address['street']}, ${address['address_number']}',
+                style: GoogleFonts.lato(
+                  fontSize: 14,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              const SizedBox(width: 28), // To align with the first row
+              Text(
+                '${address['region']}, ${address['city']} - ${address['state']}',
+                style: GoogleFonts.lato(
+                  fontSize: 14,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              const SizedBox(width: 28), // To align with the first row
+              Text(
+                '${address['postal_code']}',
+                style: GoogleFonts.lato(
+                  fontSize: 14,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
