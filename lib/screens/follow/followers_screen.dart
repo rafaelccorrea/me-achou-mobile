@@ -27,6 +27,10 @@ class _FollowersScreenState extends State<FollowersScreen> {
   int totalFollowing = 0;
   int totalFollowers = 0;
   int currentIndex = 1;
+  int initialFollowingCount =
+      0; // variável para armazenar o valor inicial dos seguindo
+  int initialFollowersCount =
+      0; // variável para armazenar o valor inicial dos seguidores
   final GlobalKey<AnimatedListState> _followingListKey =
       GlobalKey<AnimatedListState>();
   final TextEditingController _searchController = TextEditingController();
@@ -103,6 +107,8 @@ class _FollowersScreenState extends State<FollowersScreen> {
         setState(() {
           followingStores = List<Map<String, dynamic>>.from(response['data']);
           totalFollowing = response['total'];
+          initialFollowingCount =
+              totalFollowing; // Armazena o valor inicial de seguindo
           isLoadingFollowing = false;
           isSearching = false;
         });
@@ -136,6 +142,8 @@ class _FollowersScreenState extends State<FollowersScreen> {
         setState(() {
           followersStores = List<Map<String, dynamic>>.from(response['data']);
           totalFollowers = response['total'];
+          initialFollowersCount =
+              totalFollowers; // Armazena o valor inicial de seguidores
           isLoadingFollowers = false;
           isSearching = false;
         });
@@ -318,15 +326,23 @@ class _FollowersScreenState extends State<FollowersScreen> {
                             },
                             child: Column(
                               children: [
-                                Text(
-                                  '$totalFollowing',
-                                  style: GoogleFonts.lato(
-                                    textStyle: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                TweenAnimationBuilder<double>(
+                                  tween: Tween<double>(
+                                      begin: initialFollowingCount.toDouble(),
+                                      end: totalFollowing.toDouble()),
+                                  duration: const Duration(seconds: 3),
+                                  curve: Curves.easeOut,
+                                  builder: (BuildContext context, double value,
+                                      Widget? child) {
+                                    return Text(
+                                      value.toInt().toString(),
+                                      style: GoogleFonts.lato(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    );
+                                  },
                                 ),
                                 Text(
                                   'Seguindo',
@@ -357,15 +373,23 @@ class _FollowersScreenState extends State<FollowersScreen> {
                               },
                               child: Column(
                                 children: [
-                                  Text(
-                                    '$totalFollowers',
-                                    style: GoogleFonts.lato(
-                                      textStyle: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                  TweenAnimationBuilder<double>(
+                                    tween: Tween<double>(
+                                        begin: initialFollowersCount.toDouble(),
+                                        end: totalFollowers.toDouble()),
+                                    duration: const Duration(seconds: 3),
+                                    curve: Curves.easeOut,
+                                    builder: (BuildContext context,
+                                        double value, Widget? child) {
+                                      return Text(
+                                        value.toInt().toString(),
+                                        style: GoogleFonts.lato(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      );
+                                    },
                                   ),
                                   Text(
                                     'Seguidores',
